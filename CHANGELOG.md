@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- In the tenant lease form, the property selector now labels a property set up as a colocation "in colocation" instead of "occupied by {tenant}". Picking a shared dwelling to add another roommate no longer reads as though the property were already taken.
+
 ## [2.0.2] - 2026-09-11
 
 ### Fixed

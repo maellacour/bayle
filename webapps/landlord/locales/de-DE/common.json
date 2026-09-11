@@ -259,6 +259,7 @@
   "Number of terms": "Anzahl der Zahlungsperioden",
   "Occupancy rate": "Belegungsrate",
   "Occupied by {{tenant}}": "Besetzt von {{tenant}}",
+  "in colocation": "in Wohngemeinschaft",
   "occupied by {{tenantName}}": "Besetzt von {{tenantName}}",
   "occupied by current tenant": "Vom jetzigen Mieter bewohnt",
   "Office": "Büro",

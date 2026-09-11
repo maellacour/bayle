@@ -222,6 +222,9 @@ function LeaseContractForm({ readOnly, onSubmit }) {
     const currentProperties = store.tenant.selected?.properties
       ? store.tenant.selected.properties.map(({ propertyId }) => propertyId)
       : [];
+    const colocationPropertyIds = new Set(
+      store.colocation.items.map(({ propertyId }) => propertyId)
+    );
     return [
       { id: '', label: '', value: '' },
       ...store.property.items.map(({ _id, name, status, occupantLabel }) => ({
@@ -229,8 +232,9 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         value: _id,
         label: t('{{name}} - {{status}}', {
           name,
-          status:
-            status === 'occupied'
+          status: colocationPropertyIds.has(_id)
+            ? t('in colocation')
+            : status === 'occupied'
               ? !currentProperties.includes(_id)
                 ? t('occupied by {{tenantName}}', {
                     tenantName: occupantLabel
@@ -240,7 +244,12 @@ function LeaseContractForm({ readOnly, onSubmit }) {
         })
       }))
     ];
-  }, [t, store.tenant.selected.properties, store.property.items]);
+  }, [
+    t,
+    store.tenant.selected.properties,
+    store.property.items,
+    store.colocation.items
+  ]);
 
   const _onSubmit = useCallback(
     async (lease) => {

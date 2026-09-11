@@ -259,6 +259,7 @@
   "Number of terms": "Número de ciclos",
   "Occupancy rate": "Taxa de ocupação",
   "Occupied by {{tenant}}": "Ocupado por {{tenant}}",
+  "in colocation": "em colocação",
   "occupied by {{tenantName}}": "ocupado por {{tenantName}}",
   "occupied by current tenant": "ocupado pelo inquilino atual",
   "Office": "Escritório",

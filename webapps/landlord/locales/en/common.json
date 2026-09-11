@@ -271,6 +271,7 @@
   "Number of terms": "Number of terms",
   "Occupancy rate": "Occupancy rate",
   "Occupied by {{tenant}}": "Occupied by {{tenant}}",
+  "in colocation": "in colocation",
   "occupied by {{tenantName}}": "occupied by {{tenantName}}",
   "occupied by current tenant": "occupied by current tenant",
   "Office": "Office",

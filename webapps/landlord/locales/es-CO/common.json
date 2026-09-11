@@ -259,6 +259,7 @@
   "Number of terms": "Número de plazos",
   "Occupancy rate": "Tasa de ocupación",
   "Occupied by {{tenant}}": "Ocupado por {{tenant}}",
+  "in colocation": "en colocación",
   "occupied by {{tenantName}}": "ocupado por {{tenantName}}",
   "occupied by current tenant": "ocupado por el inquilino actual",
   "Office": "Oficina",
