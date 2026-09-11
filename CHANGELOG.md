@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - The tenants list filter can now filter by property: alongside the "Lease running" / "Lease ended" toggles, the Filters menu lists every property that has a tenant, so you can narrow the list to the tenants of a given dwelling. Property and status filters combine (a tenant must match a selected status and a selected property).
 - In the tenant lease form, selecting a property that is already occupied by another tenant and is not set up as a colocation now shows a non-blocking warning, pointing to the colocation feature on the property page. It stays silent for a real colocation or for the tenant that already rents the property, so it flags accidental double-assignments without getting in the way of legitimate shared rentals.
+- The per-property yearly results now list the payments received on the property that year: date, amount, payment method, reference and tenant, sorted by date. Under a property's "Collected revenue" chart, this gives a ledger of the actual bank movements behind the figures.
+
+### Changed
+
+- The per-property "Charged rent" (rents called) figure no longer counts a whole calendar year up front. For a year in progress it counts only the terms already called (elapsed and current months); a past year still counts every month. An early termination was already handled (post-notice terms prorate to zero). This matches how rents are actually called, especially for individual landlords with a notice period.
 
 ### Changed
 

@@ -494,6 +494,8 @@
   "Several leases overlap on this property during the year. The occupancy rate is capped at 100%.": "Several leases overlap on this property during the year. The occupancy rate is capped at 100%.",
   "Expenses by category": "Expenses by category",
   "Collected revenue of {{year}}": "Collected revenue of {{year}}",
+  "Payments received in {{year}}": "Payments received in {{year}}",
+  "Term {{term}}": "Term {{term}}",
   "Results by property": "Results by property",
   "Amounts are split between the properties of a shared lease": "Amounts are split between the properties of a shared lease",
   "Several leases overlap on this property": "Several leases overlap on this property",

@@ -40,7 +40,8 @@ function _emptyResult(property) {
     netResult: 0,
     occupancy: { days: 0, rate: 0 },
     allocationApproximate: false,
-    occupancyOverlap: false
+    occupancyOverlap: false,
+    payments: []
   };
 }
 
@@ -94,6 +95,15 @@ async function _computeResults(realmId, year, propertyId) {
   const yearStart = moment({ year, month: 0, day: 1 }).startOf('day');
   const yearEnd = moment(yearStart).endOf('year');
   const daysInYear = yearEnd.diff(yearStart, 'days') + 1;
+
+  // "Rents called" only counts terms that have actually been called by now: for
+  // a past year every month (1-12), for the year in progress only the elapsed
+  // and current months, for a future year none. rent.month is 1-based. This
+  // avoids reporting a full calendar year of charged rent mid-year; an early
+  // termination is already handled upstream (post-notice terms prorate to 0).
+  const now = moment();
+  const maxCalledMonth =
+    year < now.year() ? 12 : year > now.year() ? 0 : now.month() + 1;
 
   const propertyFilter = { realmId };
   if (propertyId) {
@@ -161,6 +171,17 @@ async function _computeResults(realmId, year, propertyId) {
           if (payment.type === 'deposit') {
             result.revenue.depositRetention += share;
           }
+          // The transaction as it appears on the statement: full amount, tagged
+          // with the tenant and the term it settles. Not weighted — this is a
+          // ledger of real payments, not a per-property allocation.
+          result.payments.push({
+            date: payment.date,
+            amount: _round2(payment.amount),
+            type: payment.type,
+            reference: payment.reference || '',
+            tenantName: tenant.name,
+            term: `${String(rent.month).padStart(2, '0')}/${rent.year}`
+          });
           if (isMultiProperty) {
             result.allocationApproximate = true;
           }
@@ -170,7 +191,7 @@ async function _computeResults(realmId, year, propertyId) {
       // Accrual memo: what the year's terms charged, and what is still owed on
       // them. `balance` is the amount carried over from the previous term, so
       // removing it leaves the charge raised by this term alone.
-      if (rent.year !== year || !rent.total) {
+      if (rent.year !== year || !rent.total || rent.month > maxCalledMonth) {
         return;
       }
       const chargedForTerm =
@@ -242,6 +263,12 @@ async function _computeResults(realmId, year, propertyId) {
       result.revenue.collected - result.expenses.total
     );
     result.occupancy.rate = result.occupancy.days / daysInYear;
+
+    result.payments.sort(
+      (a, b) =>
+        moment(a.date, 'DD/MM/YYYY').valueOf() -
+        moment(b.date, 'DD/MM/YYYY').valueOf()
+    );
 
     return result;
   });

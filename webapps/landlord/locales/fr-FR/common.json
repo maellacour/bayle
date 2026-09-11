@@ -494,6 +494,8 @@
   "Several leases overlap on this property during the year. The occupancy rate is capped at 100%.": "Plusieurs contrats se chevauchent sur ce bien durant l'année. Le taux d'occupation est plafonné à 100 %.",
   "Expenses by category": "Charges par catégorie",
   "Collected revenue of {{year}}": "Recettes encaissées en {{year}}",
+  "Payments received in {{year}}": "Paiements reçus en {{year}}",
+  "Term {{term}}": "Échéance {{term}}",
   "Results by property": "Résultats par bien",
   "Amounts are split between the properties of a shared lease": "Les montants sont répartis entre les biens d'un contrat commun",
   "Several leases overlap on this property": "Plusieurs contrats se chevauchent sur ce bien",

@@ -95,7 +95,19 @@ async function run(query) {
 const byId = (result, id) => result.properties.find((p) => p._id === id);
 
 describe('propertyaccountingmanager', () => {
+  // "Rents called" is bounded to the current date, so the clock is pinned for
+  // determinism. Default to a point after YEAR, where every 2026 term counts as
+  // called; tests about the year-in-progress override this.
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
+    jest.setSystemTime(new Date(YEAR + 1, 5, 15));
     dbProperties = [];
     dbTenants = [];
     dbExpenses = [];
@@ -178,6 +190,88 @@ describe('propertyaccountingmanager', () => {
     // ...but the term was charged in 2026 and is not owed anymore
     expect(studio.charged).toBe(1000);
     expect(studio.stillDue).toBe(0);
+  });
+
+  it('counts rents called up to today only, for the year in progress', async () => {
+    // Mid-September of the reporting year: terms up to September are called,
+    // the December term is not raised yet and must not inflate the charged rent.
+    jest.setSystemTime(new Date(YEAR, 8, 15));
+    dbProperties = [property('p1', 'Studio')];
+    dbTenants = [
+      {
+        name: 'Alice',
+        properties: [
+          {
+            propertyId: 'p1',
+            rent: 1000,
+            entryDate: localDate(2026, 1, 1),
+            exitDate: localDate(2026, 12, 31)
+          }
+        ],
+        rents: [
+          rent({ month: 9, total: { grandTotal: 1000 } }),
+          rent({ month: 12, total: { grandTotal: 1000 } })
+        ]
+      }
+    ];
+
+    const result = await run();
+    const studio = byId(result, 'p1');
+
+    // Only the September term is counted, not the future December one.
+    expect(studio.charged).toBe(1000);
+    expect(studio.stillDue).toBe(1000);
+  });
+
+  it('lists the payments received during the year, sorted, with references', async () => {
+    dbProperties = [property('p1', 'Studio')];
+    dbTenants = [
+      {
+        name: 'Alice',
+        properties: [
+          {
+            propertyId: 'p1',
+            rent: 1000,
+            entryDate: localDate(2026, 1, 1),
+            exitDate: localDate(2026, 12, 31)
+          }
+        ],
+        rents: [
+          rent({
+            month: 2,
+            payments: [
+              { amount: 1000, date: '05/02/2026', type: 'transfer', reference: 'REF-2' }
+            ]
+          }),
+          rent({
+            month: 1,
+            payments: [
+              { amount: 1000, date: '05/01/2026', type: 'cheque', reference: 'CHK-1' }
+            ]
+          })
+        ]
+      }
+    ];
+
+    const result = await run();
+    const studio = byId(result, 'p1');
+
+    expect(studio.payments).toHaveLength(2);
+    // Sorted by date ascending, full amount, tagged with tenant and term.
+    expect(studio.payments[0]).toMatchObject({
+      date: '05/01/2026',
+      amount: 1000,
+      type: 'cheque',
+      reference: 'CHK-1',
+      tenantName: 'Alice',
+      term: '01/2026'
+    });
+    expect(studio.payments[1]).toMatchObject({
+      date: '05/02/2026',
+      type: 'transfer',
+      reference: 'REF-2',
+      term: '02/2026'
+    });
   });
 
   it('reports rent charged but never settled as still due', async () => {
