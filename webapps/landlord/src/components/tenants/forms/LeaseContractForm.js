@@ -14,8 +14,10 @@ import {
   SubmitButton,
   TextField
 } from '../../formfields';
+import { Alert } from '../../ui/alert';
 import { ArrayField } from '../../formfields/ArrayField';
 import { DateField } from '../../formfields/DateField';
+import { LuAlertTriangle } from 'react-icons/lu';
 import moment from 'moment';
 import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
@@ -251,6 +253,44 @@ function LeaseContractForm({ readOnly, onSubmit }) {
     store.colocation.items
   ]);
 
+  const occupancyWarningFor = useCallback(
+    (propertyId) => {
+      if (!propertyId) {
+        return null;
+      }
+      const property = store.property.items.find(
+        ({ _id }) => _id === propertyId
+      );
+      if (!property || property.status !== 'occupied') {
+        return null;
+      }
+      // The tenant being edited already rents it: not a new double-assignment.
+      const currentProperties = store.tenant.selected?.properties
+        ? store.tenant.selected.properties.map(({ propertyId }) => propertyId)
+        : [];
+      if (currentProperties.includes(propertyId)) {
+        return null;
+      }
+      // A real colocation is a legitimate shared rental, no warning.
+      const isColocation = store.colocation.items.some(
+        ({ propertyId: id }) => id === propertyId
+      );
+      if (isColocation) {
+        return null;
+      }
+      return t(
+        'This property is already occupied by {{tenantName}}. To share it between several tenants, set up a colocation from the property page.',
+        { tenantName: property.occupantLabel }
+      );
+    },
+    [
+      t,
+      store.property.items,
+      store.tenant.selected.properties,
+      store.colocation.items
+    ]
+  );
+
   const _onSubmit = useCallback(
     async (lease) => {
       await onSubmit({
@@ -470,6 +510,19 @@ function LeaseContractForm({ readOnly, onSubmit }) {
                         />
                       </div>
                     </div>
+                    {(() => {
+                      const warning = occupancyWarningFor(
+                        values.properties[index]?._id
+                      );
+                      return warning ? (
+                        <Alert variant="warning" className="mb-4">
+                          <div className="flex items-center gap-2">
+                            <LuAlertTriangle className="size-4 shrink-0" />
+                            <span className="text-sm">{warning}</span>
+                          </div>
+                        </Alert>
+                      ) : null;
+                    })()}
                     <ArrayField
                       name={`properties[${index}].expenses`}
                       addLabel={t('Add an expense')}

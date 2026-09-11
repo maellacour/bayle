@@ -260,6 +260,7 @@
   "Occupancy rate": "Belegungsrate",
   "Occupied by {{tenant}}": "Besetzt von {{tenant}}",
   "in colocation": "in Wohngemeinschaft",
+  "This property is already occupied by {{tenantName}}. To share it between several tenants, set up a colocation from the property page.": "Diese Immobilie ist bereits von {{tenantName}} belegt. Um sie auf mehrere Mieter aufzuteilen, richten Sie eine Wohngemeinschaft auf der Immobilienseite ein.",
   "occupied by {{tenantName}}": "Besetzt von {{tenantName}}",
   "occupied by current tenant": "Vom jetzigen Mieter bewohnt",
   "Office": "Büro",

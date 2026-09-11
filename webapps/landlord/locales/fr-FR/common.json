@@ -272,6 +272,7 @@
   "Occupancy rate": "Taux d'occupation",
   "Occupied by {{tenant}}": "Occupé par {{tenant}}",
   "in colocation": "en colocation",
+  "This property is already occupied by {{tenantName}}. To share it between several tenants, set up a colocation from the property page.": "Ce bien est déjà occupé par {{tenantName}}. Pour le partager entre plusieurs locataires, créez une colocation depuis la fiche du bien.",
   "occupied by {{tenantName}}": "occupé par {{tenantName}}",
   "occupied by current tenant": "occupé par le locataire actuel",
   "Office": "Bureau",

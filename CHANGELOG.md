@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - The tenants list filter can now filter by property: alongside the "Lease running" / "Lease ended" toggles, the Filters menu lists every property that has a tenant, so you can narrow the list to the tenants of a given dwelling. Property and status filters combine (a tenant must match a selected status and a selected property).
+- In the tenant lease form, selecting a property that is already occupied by another tenant and is not set up as a colocation now shows a non-blocking warning, pointing to the colocation feature on the property page. It stays silent for a real colocation or for the tenant that already rents the property, so it flags accidental double-assignments without getting in the way of legitimate shared rentals.
 
 ### Changed
 

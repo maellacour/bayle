@@ -272,6 +272,7 @@
   "Occupancy rate": "Occupancy rate",
   "Occupied by {{tenant}}": "Occupied by {{tenant}}",
   "in colocation": "in colocation",
+  "This property is already occupied by {{tenantName}}. To share it between several tenants, set up a colocation from the property page.": "This property is already occupied by {{tenantName}}. To share it between several tenants, set up a colocation from the property page.",
   "occupied by {{tenantName}}": "occupied by {{tenantName}}",
   "occupied by current tenant": "occupied by current tenant",
   "Office": "Office",
