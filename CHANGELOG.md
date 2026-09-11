@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- The tenants list filter can now filter by property: alongside the "Lease running" / "Lease ended" toggles, the Filters menu lists every property that has a tenant, so you can narrow the list to the tenants of a given dwelling. Property and status filters combine (a tenant must match a selected status and a selected property).
+
 ### Changed
 
 - In the tenant lease form, the property selector now labels a property set up as a colocation "in colocation" instead of "occupied by {tenant}". Picking a shared dwelling to add another roommate no longer reads as though the property were already taken.
