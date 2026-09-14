@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-14
+
 ### Added
 
 - The tenants list filter can now filter by property: alongside the "Lease running" / "Lease ended" toggles, the Filters menu lists every property that has a tenant, so you can narrow the list to the tenants of a given dwelling. Property and status filters combine (a tenant must match a selected status and a selected property).
@@ -15,9 +17,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - The per-property "Charged rent" (rents called) figure no longer counts a whole calendar year up front. For a year in progress it counts only the terms already called (elapsed and current months); a past year still counts every month. An early termination was already handled (post-notice terms prorate to zero). This matches how rents are actually called, especially for individual landlords with a notice period.
-
-### Changed
-
 - In the tenant lease form, the property selector now labels a property set up as a colocation "in colocation" instead of "occupied by {tenant}". Picking a shared dwelling to add another roommate no longer reads as though the property were already taken.
 
 ## [2.0.2] - 2026-09-11
