@@ -33,7 +33,8 @@ async function fetchData(store, router) {
     store.property.fetch(),
     store.lease.fetch(),
     store.template.fetch(),
-    store.document.fetch()
+    store.document.fetch(),
+    store.colocation.fetch()
   ]);
 
   store.tenant.setSelected(

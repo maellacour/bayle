@@ -10,6 +10,7 @@ import PeriodPicker from '../PeriodPicker';
 import { StoreContext } from '../../store';
 import { toast } from 'sonner';
 import useFormatNumber from '../../hooks/useFormatNumber';
+import usePaymentTypes from '../../hooks/usePaymentTypes';
 import useTranslation from 'next-translate/useTranslation';
 
 const EXPENSE_CATEGORIES = [
@@ -46,6 +47,7 @@ function PropertyResults({ propertyId }) {
   const { t } = useTranslation('common');
   const store = useContext(StoreContext);
   const formatNumber = useFormatNumber();
+  const { itemMap: paymentTypeMap } = usePaymentTypes();
   const [period, setPeriod] = useState(moment());
   const [loading, setLoading] = useState(true);
 
@@ -243,6 +245,36 @@ function PropertyResults({ propertyId }) {
                     <ReferenceLine x={0} stroke="hsl(var(--border))" />
                   </BarChart>
                 </ChartContainer>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {results.payments?.length ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg md:text-xl">
+                  {t('Payments received in {{year}}', { year })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {results.payments.map((payment, index) => (
+                  <div
+                    key={`${payment.date}-${index}`}
+                    className="flex items-center justify-between gap-2 border-b first:border-t last:border-none py-2"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm">
+                        {payment.date} · {payment.tenantName}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {paymentTypeMap[payment.type]?.label || payment.type}
+                        {payment.reference ? ` · ${payment.reference}` : ''}
+                        {` · ${t('Term {{term}}', { term: payment.term })}`}
+                      </span>
+                    </div>
+                    <NumberFormat value={payment.amount} />
+                  </div>
+                ))}
               </CardContent>
             </Card>
           ) : null}

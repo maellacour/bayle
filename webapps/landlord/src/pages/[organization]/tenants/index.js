@@ -1,5 +1,5 @@
 import { fetchTenants, QueryKeys } from '../../../utils/restcalls';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { List } from '../../../components/ResourceList';
 import { LuPlusCircle } from 'react-icons/lu';
@@ -13,11 +13,30 @@ import { useRouter } from 'next/router';
 import useTranslation from 'next-translate/useTranslation';
 import { withAuthentication } from '../../../components/Authentication';
 
+const STATUS_FILTER_IDS = ['inprogress', 'stopped'];
+const PROPERTY_FILTER_PREFIX = 'property:';
+
 function _filterData(data, filters) {
+  const selectedIds = filters.statuses || [];
+  const selectedStatuses = selectedIds.filter((id) =>
+    STATUS_FILTER_IDS.includes(id)
+  );
+  const selectedPropertyIds = selectedIds
+    .filter((id) => id.startsWith(PROPERTY_FILTER_PREFIX))
+    .map((id) => id.slice(PROPERTY_FILTER_PREFIX.length));
+
   let filteredItems =
-    filters.statuses?.length === 0
+    selectedStatuses.length === 0
       ? data
-      : data.filter(({ status }) => filters.statuses.includes(status));
+      : data.filter(({ status }) => selectedStatuses.includes(status));
+
+  if (selectedPropertyIds.length) {
+    filteredItems = filteredItems.filter(({ properties }) =>
+      properties?.some(({ propertyId }) =>
+        selectedPropertyIds.includes(propertyId)
+      )
+    );
+  }
 
   if (filters.searchText) {
     const regExp = /\s|\.|-/gi;
@@ -84,6 +103,29 @@ function Tenants() {
   });
   const [openNewTenantDialog, setOpenNewTenantDialog] = useState(false);
 
+  const filters = useMemo(() => {
+    const seen = new Set();
+    const propertyOptions = [];
+    data?.forEach(({ properties }) =>
+      properties?.forEach(({ propertyId, property }) => {
+        if (propertyId && !seen.has(propertyId)) {
+          seen.add(propertyId);
+          propertyOptions.push({
+            id: `${PROPERTY_FILTER_PREFIX}${propertyId}`,
+            label: property?.name || propertyId
+          });
+        }
+      })
+    );
+    propertyOptions.sort((a, b) => a.label.localeCompare(b.label));
+
+    return [
+      { id: 'inprogress', label: t('Lease running') },
+      { id: 'stopped', label: t('Lease ended') },
+      ...propertyOptions
+    ];
+  }, [data, t]);
+
   const onNewTenant = useCallback(() => {
     setOpenNewTenantDialog(true);
   }, [setOpenNewTenantDialog]);
@@ -96,10 +138,7 @@ function Tenants() {
     <Page title={t('Tenants')} loading={isLoading} dataCy="tenantsPage">
       <List
         data={data}
-        filters={[
-          { id: 'inprogress', label: t('Lease running') },
-          { id: 'stopped', label: t('Lease ended') }
-        ]}
+        filters={filters}
         defaultFilterIds={['inprogress']}
         filterFn={_filterData}
         renderActions={() => (
