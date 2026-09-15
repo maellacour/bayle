@@ -231,6 +231,8 @@
   "Last rent balance": "Solde des loyers",
   "Lease": "Bail",
   "Lease ended": "Bail terminé",
+  "With an unpaid balance": "Avec un solde impayé",
+  "{{amount}} due": "{{amount}} dû",
   "Lease running": "Bail en cours",
   "Lease terminated on {{terminationDate}}": "Bail terminé le {{terminationDate}}",
   "lease_allInclusiveRentAmount": "bail.montant.loyer.CC",

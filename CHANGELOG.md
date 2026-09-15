@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- The tenants list can be filtered to those **with an unpaid balance**, and each tenant row shows what it still owes. The balance is the running amount due to date (deposit retentions already net out, since they are recorded as payments), so a tenant who left owing money still shows up.
+
+### Fixed
+
+- The dashboard "Outstanding rent" tile linked to the current month's rents, which never showed the departed tenants counted in its total, so the link was of little use. It now links to the tenants list filtered by unpaid balance, so every tenant behind the figure — active or gone — is reachable. The tile figure and the tenant balances are computed from the same shared helper, so they can no longer drift.
+
 ## [2.1.0] - 2026-09-14
 
 ### Added

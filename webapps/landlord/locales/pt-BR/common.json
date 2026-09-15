@@ -220,6 +220,8 @@
   "Last rent balance": "Último saldo de aluguel",
   "Lease": "Contrato de aluguel",
   "Lease ended": "Contrato de aluguel encerrado",
+  "With an unpaid balance": "Com saldo em aberto",
+  "{{amount}} due": "{{amount}} em aberto",
   "Lease running": "Contrato de aluguel em andamento",
   "Lease terminated on {{terminationDate}}": "Contrato de aluguel terminado em {{terminationDate}}",
   "lease_allInclusiveRentAmount": "lease.allInclusive.rent.amount",

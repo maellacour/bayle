@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { outstandingBalance } from '../utils/arrears.js';
 
 export function toRentData(inputRent, inputOccupant, emailStatus) {
   const rent = JSON.parse(JSON.stringify(inputRent));
@@ -394,6 +395,9 @@ export function toOccupantData(inputOccupant) {
         0
       )
     : 0;
+  // What the tenant still owes as of now, over every term reached (running
+  // balance; deposit retentions already net out). Positive means money due.
+  occupant.balance = outstandingBalance(occupant, moment().endOf('month'));
   delete occupant.rents;
   return occupant;
 }

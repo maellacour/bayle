@@ -153,7 +153,16 @@ export default function TenantListItem({ tenant }) {
       </CardContent>
 
       <CardFooter className="p-0 flex-col">
-        <div className="flex items-center justify-end w-full py-4 px-6">
+        <div className="flex items-center justify-between gap-2 w-full py-4 px-6">
+          {tenant.balance > 0 ? (
+            <span className="text-sm font-medium text-warning">
+              {t('{{amount}} due', {
+                amount: formatNumber(tenant.balance)
+              })}
+            </span>
+          ) : (
+            <span />
+          )}
           <Badge
             variant={tenant.terminated ? 'secondary' : 'success'}
             className="font-normal"

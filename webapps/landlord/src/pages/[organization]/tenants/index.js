@@ -15,6 +15,7 @@ import { withAuthentication } from '../../../components/Authentication';
 
 const STATUS_FILTER_IDS = ['inprogress', 'stopped'];
 const PROPERTY_FILTER_PREFIX = 'property:';
+const DEBTOR_FILTER_ID = 'debtor';
 
 function _filterData(data, filters) {
   const selectedIds = filters.statuses || [];
@@ -24,6 +25,7 @@ function _filterData(data, filters) {
   const selectedPropertyIds = selectedIds
     .filter((id) => id.startsWith(PROPERTY_FILTER_PREFIX))
     .map((id) => id.slice(PROPERTY_FILTER_PREFIX.length));
+  const debtorsOnly = selectedIds.includes(DEBTOR_FILTER_ID);
 
   let filteredItems =
     selectedStatuses.length === 0
@@ -36,6 +38,10 @@ function _filterData(data, filters) {
         selectedPropertyIds.includes(propertyId)
       )
     );
+  }
+
+  if (debtorsOnly) {
+    filteredItems = filteredItems.filter(({ balance }) => (balance || 0) > 0);
   }
 
   if (filters.searchText) {
@@ -122,6 +128,7 @@ function Tenants() {
     return [
       { id: 'inprogress', label: t('Lease running') },
       { id: 'stopped', label: t('Lease ended') },
+      { id: DEBTOR_FILTER_ID, label: t('With an unpaid balance') },
       ...propertyOptions
     ];
   }, [data, t]);
