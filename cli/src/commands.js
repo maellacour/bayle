@@ -280,7 +280,7 @@ function displayConfigWarningsAndErrors() {
     );
     console.log(
       chalk.yellow(
-        'You can configure the email service by running the command "./mre configure". The application has to be stopped first to run this command.'
+        'You can configure the email service by running the command "./bayle configure". The application has to be stopped first to run this command.'
       )
     );
   }
@@ -363,7 +363,7 @@ function displayHelp() {
 
   console.log(
     chalk.white(
-      `Usage: mre [option...] {${commands.map(({ name }) => name).join('|')}}`
+      `Usage: bayle [option...] {${commands.map(({ name }) => name).join('|')}}`
     )
   );
   console.log('');
@@ -763,7 +763,7 @@ ${Object.entries(envConfig)
   // email delivery configuration
   let emailDeliveryConfigContent = `
 # Email service has not been configured. Reset password and tenant sign in will not work.
-# You can configure it later by running the command ./mre configure  
+# You can configure it later by running the command ./bayle configure
   `;
   if (promptsConfig.emailConfig === 'gmail') {
     emailDeliveryConfigContent = `

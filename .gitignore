@@ -33,9 +33,9 @@ backup/*
 
 webapps/*/public/__ENV.js
 
-mre-*
-mre
-mre.exe
-mre-macos
+bayle-*
+bayle
+bayle.exe
+bayle-macos
 
 settings.local.json

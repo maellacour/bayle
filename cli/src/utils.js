@@ -77,7 +77,7 @@ function getBackupPath() {
   // Path when run from npm
   let backupPath = path.resolve(__dirname, '..', '..', 'backup');
   if (!fs.existsSync(backupPath)) {
-    // Path when run from the mre binary
+    // Path when run from the bayle binary
     backupPath = path.resolve(process.execPath, '..', 'backup');
   }
   if (!fs.existsSync(backupPath)) {

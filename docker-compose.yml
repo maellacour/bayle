@@ -50,7 +50,7 @@ services:
   ###############################################################################
   gateway:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/gateway:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/gateway:${BAYLE_VERSION:-latest}'
     environment:
       NODE_ENV: production
       LOGGER_LEVEL: info
@@ -97,7 +97,7 @@ services:
   ###############################################################################
   authenticator:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/authenticator:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/authenticator:${BAYLE_VERSION:-latest}'
     environment:
       NODE_ENV: production
       PORT: 8000
@@ -129,7 +129,7 @@ services:
   ###############################################################################
   pdfgenerator:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/pdfgenerator:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/pdfgenerator:${BAYLE_VERSION:-latest}'
     environment:
       NODE_ENV: production
       PORT: 8300
@@ -151,7 +151,7 @@ services:
   ###############################################################################
   emailer:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/emailer:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/emailer:${BAYLE_VERSION:-latest}'
     environment:
       NODE_ENV: production
       ALLOW_SENDING_EMAILS: 'true'
@@ -203,7 +203,7 @@ services:
   ###############################################################################
   api:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/api:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/api:${BAYLE_VERSION:-latest}'
     volumes:
       - ./backup:/usr/app/backup
     environment:
@@ -233,7 +233,7 @@ services:
   ###############################################################################
   tenantapi:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/tenantapi:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/tenantapi:${BAYLE_VERSION:-latest}'
     environment:
       NODE_ENV: production
       PORT: 8250
@@ -252,7 +252,7 @@ services:
   ###############################################################################
   landlord-frontend:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/landlord-frontend:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/landlord-frontend:${BAYLE_VERSION:-latest}'
     environment:
       BASE_PATH: /landlord
       PORT: 8180
@@ -273,7 +273,7 @@ services:
   ###############################################################################
   tenant-frontend:
     restart: unless-stopped
-    image: 'ghcr.io/microrealestate/microrealestate/tenant-frontend:${MRE_VERSION:-latest}'
+    image: 'ghcr.io/microrealestate/microrealestate/tenant-frontend:${BAYLE_VERSION:-latest}'
     environment:
       BASE_PATH: /tenant
       PORT: 8190

@@ -65,7 +65,7 @@ Attach debuggers to running Docker services via ports:
 - Emailer: 9228, PDFGenerator: 9227, ResetService: 9230
 
 ### Key Environment Variables
-- `MRE_VERSION`: Controls Docker image tags (dev/local/latest)
+- `BAYLE_VERSION`: Controls Docker image tags (dev/local/latest)
 - `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`: JWT signing
 - `MONGO_URL`, `REDIS_URL`: Database connections
 - `APP_DOMAIN`, `APP_PROTOCOL`: External service URLs
@@ -96,9 +96,9 @@ yarn format      # Format all code
 
 ```bash
 # CLI commands for database operations
-yarn mre dumpdb     # Backup database
-yarn mre restoredb  # Restore from backup
-yarn mre configure  # Setup environment variables
+yarn bayle dumpdb     # Backup database
+yarn bayle restoredb  # Restore from backup
+yarn bayle configure  # Setup environment variables
 ```
 
 The CLI (`cli/src/`) manages Docker Compose orchestration and provides database utilities.

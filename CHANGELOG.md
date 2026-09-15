@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- The CLI is renamed from `mre` to `bayle`. Run it with `yarn bayle …` (previously `yarn mre …`); the released binary and archives are now `bayle` / `bayle-*-x64`; and the image-tag variable is `BAYLE_VERSION` (was `MRE_VERSION`). The database name is unchanged (`mredb`). Update any local scripts that called `yarn mre` or set `MRE_VERSION`.
+
 ## [2.2.0] - 2026-09-15
 
 ### Added
