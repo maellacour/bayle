@@ -471,5 +471,18 @@ export function toProperty(inputProperty, inputOccupant, inputOccupants) {
     });
   }
 
+  // Everyone currently occupying the property. A colocation has several, so the
+  // UI can list every roommate instead of only the most recent occupant.
+  property.occupants = (inputOccupants || [])
+    .filter((occupant) => {
+      const begin = moment(occupant.beginDate);
+      const end = moment(occupant.terminationDate || occupant.endDate);
+      return (
+        begin.isSameOrBefore(currentDate, 'day') &&
+        end.isSameOrAfter(currentDate, 'day')
+      );
+    })
+    .map((occupant) => occupant.name);
+
   return property;
 }
