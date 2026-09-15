@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-15
+
 ### Added
 
 - The tenants list can be filtered to those **with an unpaid balance**, and each tenant row shows what it still owes. The balance is the running amount due to date (deposit retentions already net out, since they are recorded as payments), so a tenant who left owing money still shows up.

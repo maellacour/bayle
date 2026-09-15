@@ -1,6 +1,6 @@
 {
   "name": "@bayle/cli",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "The MicroRealEstate CLI",
   "main": "src/index.js",
   "private": true,
