@@ -1,6 +1,6 @@
 {
   "name": "@bayle/api",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Api service",
   "main": "src/index.js",
   "private": true,

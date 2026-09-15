@@ -231,6 +231,8 @@
   "Last rent balance": "Last rent balance",
   "Lease": "Lease",
   "Lease ended": "Lease ended",
+  "With an unpaid balance": "With an unpaid balance",
+  "{{amount}} due": "{{amount}} due",
   "Lease running": "Lease running",
   "Lease terminated on {{terminationDate}}": "Lease terminated on {{terminationDate}}",
   "lease_allInclusiveRentAmount": "lease.allInclusive.rent.amount",

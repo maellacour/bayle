@@ -220,6 +220,8 @@
   "Last rent balance": "Letzter Mietsaldo",
   "Lease": "Mietvertrag",
   "Lease ended": "Mietvertrag beendet",
+  "With an unpaid balance": "Mit offenem Saldo",
+  "{{amount}} due": "{{amount}} fällig",
   "Lease running": "Mietvertrag läuft",
   "Lease terminated on {{terminationDate}}": "Mietvertrag gekündigt am {{terminationDate}}",
   "lease_allInclusiveRentAmount": "miet.inklusive.nebenkosten.höhe",

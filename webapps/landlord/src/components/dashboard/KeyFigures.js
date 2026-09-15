@@ -41,6 +41,15 @@ function KeyFigures({ className }) {
     );
   };
 
+  // Outstanding rent spans past terms and ended leases, which the month-bound
+  // rents page cannot show, so drill into the tenants list filtered to those
+  // who still owe.
+  const showDebtors = () => {
+    router.push(
+      `/${store.organization.selected.name}/tenants?statuses=debtor`
+    );
+  };
+
   return (
     <div
       className={cn(
@@ -74,7 +83,7 @@ function KeyFigures({ className }) {
             ? t('{{count}} tenants concerned', { count: arrears.tenantCount })
             : t('Well done! All rents are paid')
         }
-        onClick={arrears.total > 0 ? showRents('notpaid') : undefined}
+        onClick={arrears.total > 0 ? showDebtors : undefined}
       />
 
       <MetricCard
