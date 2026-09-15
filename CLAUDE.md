@@ -70,7 +70,7 @@ For multi-step tasks, state a brief plan:
 
 ## Project Overview
 
-**MicroRealEstate** helps landlords manage properties, tenants, leases and rent payments. It is a **Docker-composed microservice application** with two Next.js frontends (landlord + tenant), an Express/MongoDB backend split across several services, and a Node CLI (`mre`) that orchestrates the compose files.
+**MicroRealEstate** helps landlords manage properties, tenants, leases and rent payments. It is a **Docker-composed microservice application** with two Next.js frontends (landlord + tenant), an Express/MongoDB backend split across several services, and a Node CLI (`bayle`) that orchestrates the compose files.
 
 This checkout is the **`maellacour` fork** (`git@github.com:maellacour/microrealestate.git`), tracking upstream `microrealestate/microrealestate`. Work happens on `develop`; `main` is the PR target. The fork publishes its own images to `ghcr.io/maellacour/bayle/*` — see the Docker section, this matters.
 
@@ -107,7 +107,7 @@ Data is multi-tenant by **realm** (an organization). Almost every collection car
 
 ```
 microrealestate/
-├── cli/                    # `mre` CLI — wraps docker compose, generates/validates .env
+├── cli/                    # `bayle` CLI — wraps docker compose, generates/validates .env
 ├── base.env / .env         # Env template + local env (ports, secrets, URLs)
 ├── docker-compose*.yml     # Prod (root), microservices.{base,dev,prod,test,ci}, monitoring
 ├── types/src/              # @bayle/types — shared TS types
@@ -260,10 +260,10 @@ yarn start
 yarn stop
 
 # CLI directly (status, showconfig, configure, dumpdb, restoredb)
-yarn mre status
-yarn mre configure     # regenerate .env prompts; keeps existing secrets
-yarn mre dumpdb
-yarn mre restoredb
+yarn bayle status
+yarn bayle configure     # regenerate .env prompts; keeps existing secrets
+yarn bayle dumpdb
+yarn bayle restoredb
 
 # Tests
 yarn workspace @bayle/api run test     # Jest (needs --experimental-vm-modules, already wired)
@@ -286,7 +286,7 @@ Dev URLs: `http://localhost:8080/landlord` and `http://localhost:8080/tenant`.
 ## Gotchas
 
 - **`types` and `common` must be built before anything that imports them.** The `dev` scripts handle this (`clean` → `transpile` → parallel watches); a bare `next dev` or `node` will not.
-- Mongo 7 is **not** compatible with pre-1.0.0-alpha.1 databases — `mre dumpdb`, wipe `data/mongodb`, `mre restoredb`.
+- Mongo 7 is **not** compatible with pre-1.0.0-alpha.1 databases — `bayle dumpdb`, wipe `data/mongodb`, `bayle restoredb`.
 - `resetservice` is gated on `!config.PRODUCTION` in the gateway. Keep it that way.
 - The landlord app has both `date-fns` and `moment` installed; existing code overwhelmingly uses `moment`.
 - Husky + lint-staged run eslint/prettier on commit. Don't fight the formatter — run `yarn format`.

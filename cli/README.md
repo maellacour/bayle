@@ -1,4 +1,4 @@
-# How to build the mre cli
+# How to build the bayle cli
 
 ### Prerequisite
 
@@ -16,17 +16,17 @@ Install the packages
 yarn workspaces focus @bayle/cli
 ```
 
-Run the `pkg` tool to create the mre executables
+Run the `pkg` tool to create the bayle executables
 
 ```shell
-pkg cli/package.json --compress Brotli --output mre
+pkg cli/package.json --compress Brotli --output bayle
 ```
 
 Rename the linux and windows executables
 
 ```shell
-mv mre-linux mre
-mv mre-win.exe mre.exe
+mv bayle-linux bayle
+mv bayle-win.exe bayle.exe
 ```
 
-The mre cli is ready to use!
+The bayle cli is ready to use!

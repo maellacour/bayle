@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-09-15
+
+### Changed
+
+- A property's detail page now lists every current occupant in its header, so a colocation shows all its roommates instead of only the most recent one.
+- The CLI is renamed from `mre` to `bayle`. Run it with `yarn bayle …` (previously `yarn mre …`); the released binary and archives are now `bayle` / `bayle-*-x64`; and the image-tag variable is `BAYLE_VERSION` (was `MRE_VERSION`). The database name is unchanged (`mredb`). Update any local scripts that called `yarn mre` or set `MRE_VERSION`.
+
+### Fixed
+
+- The `api` and `pdfgenerator` images could fail to build on the `corepack prepare yarn@3.3.0` step (a fetch during the image build). These Dockerfiles no longer download Yarn through corepack: like the other services, they use the Yarn release vendored in the repo (`.yarnrc.yml` `yarnPath`), which the pre-installed Yarn hands off to. No network fetch, and the build is deterministic.
+
 ## [2.2.0] - 2026-09-15
 
 ### Added

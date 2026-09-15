@@ -107,20 +107,26 @@ function Property() {
   }, [router, store.appHistory.previousPath]);
 
   const propertySummary = useMemo(() => {
-    const { _id, status, occupantLabel, type } = store.property.selected;
+    const { _id, status, occupantLabel, occupants, type } =
+      store.property.selected;
     if (!_id) {
       return null;
     }
     const vacant = status === 'vacant';
     const propertyType = types.find(({ id }) => id === type);
+    // List every current occupant (a colocation has several); fall back to the
+    // single label when the current-occupant list is not available.
+    const occupantsLabel = occupants?.length
+      ? occupants.join(', ')
+      : occupantLabel;
     return (
       <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <Badge variant={vacant ? 'warning' : 'success'} className="font-normal">
           {vacant ? t('Vacant') : t('Rented')}
         </Badge>
         {propertyType ? <span>{t(propertyType.labelId)}</span> : null}
-        {!vacant && occupantLabel ? (
-          <span>{t('Occupied by {{tenant}}', { tenant: occupantLabel })}</span>
+        {!vacant && occupantsLabel ? (
+          <span>{t('Occupied by {{tenant}}', { tenant: occupantsLabel })}</span>
         ) : null}
       </span>
     );

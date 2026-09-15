@@ -18,7 +18,7 @@ base.env
 dist
 node_modules
 tmp
-mre*
+bayle*
 docker-compose*
 dev.Dockerfile
 Dockerfile
