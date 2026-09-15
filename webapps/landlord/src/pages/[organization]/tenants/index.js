@@ -126,10 +126,17 @@ function Tenants() {
     propertyOptions.sort((a, b) => a.label.localeCompare(b.label));
 
     return [
-      { id: 'inprogress', label: t('Lease running') },
-      { id: 'stopped', label: t('Lease ended') },
-      { id: DEBTOR_FILTER_ID, label: t('With an unpaid balance') },
-      ...propertyOptions
+      { id: 'inprogress', label: t('Lease running'), group: t('Lease') },
+      { id: 'stopped', label: t('Lease ended'), group: t('Lease') },
+      {
+        id: DEBTOR_FILTER_ID,
+        label: t('With an unpaid balance'),
+        group: t('Balance')
+      },
+      ...propertyOptions.map((option) => ({
+        ...option,
+        group: t('Properties')
+      }))
     ];
   }, [data, t]);
 
