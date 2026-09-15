@@ -20,6 +20,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read changelog entry
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ env.RELEASE_TAG }}
+          path: ./CHANGELOG.md
+
       - name: install node v20
         uses: actions/setup-node@v4
         with:
@@ -29,25 +36,72 @@ jobs:
         run: |
          npm install -g @yao-pkg/pkg
          yarn workspaces focus @bayle/cli
-         pkg cli/package.json --compress Brotli --output mre
-         mv mre-linux mre
-         mv mre-win.exe mre.exe
+         pkg cli/package.json --compress Brotli --output bayle
+         mv bayle-linux bayle
+         mv bayle-win.exe bayle.exe
 
       - name: Compress
         run: |
-         tar -zczf mre-linux-x64.tar.gz backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml mre
-         tar -zczf mre-macos-x64.tar.gz backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml mre-macos
-         zip mre-win-x64.zip backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml mre.exe
+         tar -zczf bayle-linux-x64.tar.gz backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml bayle
+         tar -zczf bayle-macos-x64.tar.gz backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml bayle-macos
+         zip bayle-win-x64.zip backup base.env docker-compose.microservices.base.yml docker-compose.microservices.prod.yml bayle.exe
     
-      - name: Upload commands in release
-        uses: softprops/action-gh-release@v1
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          name: Bayle ${{ github.ref_name }}
+          prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
+          draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
+          body: |
+            ## What's new in ${{ github.ref_name }}
+
+            ${{ steps.changelog_reader.outputs.changes }}
+
+            ---
+
+            ## Container images
+
+            Every service image is published to the GitHub Container Registry,
+            tagged `${{ env.RELEASE_TAG }}` and `latest`:
+
+            ```
+            ghcr.io/${{ github.repository }}/<service>:${{ env.RELEASE_TAG }}
+            ```
+
+            Services: `gateway`, `api`, `tenantapi`, `authenticator`,
+            `pdfgenerator`, `emailer`, `resetservice`, `landlord-frontend`,
+            `tenant-frontend`.
+
+            ## Self-hosting
+
+            New install: download the `bayle` bundle below (the CLI plus the
+            compose files and `base.env`), or follow the
+            [self-hosting guide](https://github.com/${{ github.repository }}#self-host-the-application)
+            in the README.
+
+            Existing install: pull the new images and restart with
+            `docker compose pull && docker compose up -d`. Check the notes above
+            for any migration step.
+
+            ### Downloads
+            - Linux (x64): `bayle-linux-x64.tar.gz`
+            - macOS (x64): `bayle-macos-x64.tar.gz`
+            - Windows (x64): `bayle-win-x64.zip`
+
+            ## Build details
+            - Version: `${{ env.RELEASE_TAG }}`
+            - Commit: [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            - Workflow run: [#${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ## Issues
+
+            Found a problem? Open an issue on the
+            [tracker](https://github.com/${{ github.repository }}/issues).
           files: |
-           ./mre-linux-x64.tar.gz
-           ./mre-macos-x64.tar.gz
-           ./mre-win-x64.zip
+           ./bayle-linux-x64.tar.gz
+           ./bayle-macos-x64.tar.gz
+           ./bayle-win-x64.zip
 
 
   build-push-images:
