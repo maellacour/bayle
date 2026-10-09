@@ -311,9 +311,12 @@ Cypress.Commands.add('pickDate', (name, date, locale = 'fr') => {
             .contains(new RegExp(`^${target.date()}$`))
             .click();
         } else {
-          cy.get(
-            `[role=dialog] button[name="${diff < 0 ? 'previous-month' : 'next-month'}"]`
-          ).click();
+          // click the whole distance in one pass (a 369 lease spans 108
+          // months), then re-read the caption to confirm before picking
+          const nav = diff < 0 ? 'previous-month' : 'next-month';
+          Cypress._.times(Math.abs(diff), () => {
+            cy.get(`[role=dialog] button[name="${nav}"]`).click();
+          });
           navigate();
         }
       });

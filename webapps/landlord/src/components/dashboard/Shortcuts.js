@@ -97,7 +97,7 @@ function Shortcuts({ firstConnection = false, className }) {
             disabled={!store.dashboard.data?.overview?.tenantCount}
             onClick={handlePayment}
             className="md:flex md:flex-col md:items-center md:justify-start"
-            data-cy="shortcutSettleRent"
+            dataCy="shortcutSettleRent"
           />
 
           <ShortcutButton
@@ -105,7 +105,7 @@ function Shortcuts({ firstConnection = false, className }) {
             label={isDesktop ? t('Terminate a lease') : t('Terminate')}
             onClick={handleTerminateLease}
             className="md:flex md:flex-col md:items-center md:justify-start"
-            data-cy="shortcutTerminateLease"
+            dataCy="shortcutTerminateLease"
           />
 
           <ShortcutButton
@@ -113,7 +113,7 @@ function Shortcuts({ firstConnection = false, className }) {
             label={isDesktop ? t('Add a property') : t('Add')}
             onClick={handleAddProperty}
             className="md:flex md:flex-col md:items-center md:justify-start"
-            data-cy="shortcutAddProperty"
+            dataCy="shortcutAddProperty"
           />
 
           <ShortcutButton
@@ -121,7 +121,7 @@ function Shortcuts({ firstConnection = false, className }) {
             label={isDesktop ? t('Add a tenant') : t('Add')}
             onClick={handleAddTenant}
             className="md:flex md:flex-col md:items-center md:justify-start"
-            data-cy="shortcutAddTenant"
+            dataCy="shortcutAddTenant"
           />
 
           {store.user.isAdministrator && (
@@ -130,7 +130,7 @@ function Shortcuts({ firstConnection = false, className }) {
               label={isDesktop ? t('Create a contract') : t('Create')}
               onClick={handleCreateContract}
               className="md:flex md:flex-col md:items-center md:justify-start"
-              data-cy="shortcutCreateContract"
+              dataCy="shortcutCreateContract"
             />
           )}
         </Card>

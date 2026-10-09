@@ -8,9 +8,8 @@ describe('User access', () => {
   });
 
   it('Register a landlord with a personal account', () => {
-    cy.visit('/signup');
-    cy.get('[data-cy=signin]').click();
-    cy.get('[data-cy=signup]').click();
+    // the signup link on the signin page is hidden in demo mode, so the
+    // signup page is reached directly (cy.signUp visits it)
     cy.signUp(userWithPersonalAccount);
     cy.checkUrl('/signin');
 
@@ -45,9 +44,6 @@ describe('User access', () => {
   });
 
   it('Register a landlord with a company account', () => {
-    cy.visit('/signup');
-    cy.get('[data-cy=signin]').click();
-    cy.get('[data-cy=signup]').click();
     cy.signUp(userWithCompanyAccount);
     cy.checkUrl('/signin');
 
@@ -156,12 +152,13 @@ describe('User access', () => {
   });
 
   it('User already registered', () => {
-    cy.visit('/signup');
-    cy.get('[data-cy=signin]').click();
-    cy.get('[data-cy=signup]').click();
+    // signing up with an existing email responds like a fresh signup (the
+    // authenticator avoids account enumeration) and creates no duplicate:
+    // the original credentials still sign in
     cy.signUp(userWithPersonalAccount);
-    cy.checkUrl('/signup');
-    cy.get('input[name=email]').should('be.empty');
-    cy.get('input[name=password]').should('be.empty');
+    cy.checkUrl('/signin');
+    cy.signIn(userWithPersonalAccount);
+    cy.checkPage('dashboard');
+    cy.signOut();
   });
 });
