@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-09
+
 ### Added
 
 - Tacit renewals now leave an audit trail on the tenant: each automatic renewal records when it ran and how far it rolled the end date (`renewals` on the tenant document). The tenant's Lease card shows the number of renewals.
