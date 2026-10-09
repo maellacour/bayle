@@ -12,7 +12,11 @@ Cypress.Commands.add('resetAppData', () => {
 
 Cypress.Commands.add('signIn', ({ email, password }) => {
   cy.visit('/signin');
+  // in demo mode the form comes pre-filled with the demo credentials:
+  // replace them, never append
+  cy.get('input[name=email]').clear();
   cy.get('input[name=email]').type(email);
+  cy.get('input[name=password]').clear();
   cy.get('input[name=password]').type(password);
   cy.get('[data-cy=submit]').click();
 });
