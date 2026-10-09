@@ -231,14 +231,14 @@ export default function LandlordForm({ organization, firstAccess }) {
           }
         } catch (error) {
           console.error(error);
-          signatureKey = organization.signature || null;
+          signatureKey = organization?.signature || null;
           toast.error(t('Cannot upload signature'));
         } finally {
           setSignatureUploading(false);
         }
       } else {
         // Keep existing signature (UUID) or set to null if no signature
-        signatureKey = organization.signature || null;
+        signatureKey = organization?.signature || null;
       }
 
       if (firstAccess) {
@@ -381,7 +381,7 @@ export default function LandlordForm({ organization, firstAccess }) {
                 </>
               )}
               <SignatureThumbnail
-                signature={organization.signature}
+                signature={organization?.signature}
                 onRemove={() => setOpenRemoveSignatureDialog(true)}
                 disabled={signatureRemoving || isSubmitting}
                 className="mt-2"
