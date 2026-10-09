@@ -54,13 +54,22 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   'createContractFromStepper',
-  ({ name, description, timeRange, numberOfTerms, templates = [] }) => {
+  ({ name, description, timeRange, numberOfTerms, renewable, templates = [] }) => {
     cy.get('[data-cy=shortcutCreateContract]').click();
     cy.get('input[name=name]').type(name);
     cy.get('[data-cy=submitContract]').click();
     cy.get('textarea[name=description]').type(description);
     cy.muiSelect('timeRange', timeRange);
     cy.get('input[name=numberOfTerms]').type(numberOfTerms);
+    if (renewable) {
+      // the lease form has a single checkbox: the tacit renewal flag
+      cy.get('button[role=checkbox]').click();
+      cy.get('button[role=checkbox]').should(
+        'have.attr',
+        'data-state',
+        'checked'
+      );
+    }
     cy.get('[data-cy=submit]').click();
     templates.map(({ type, ...template }) => {
       if (type === 'text') {

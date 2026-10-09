@@ -1,0 +1,11 @@
+{
+  "name": "Léa Fontaine",
+  "isCompany": false,
+  "contacts": [
+    {
+      "name": "Léa Fontaine",
+      "email": "lea@test.com",
+      "phone": "0611223344"
+    }
+  ]
+}

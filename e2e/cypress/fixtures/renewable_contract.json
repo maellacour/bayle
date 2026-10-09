@@ -1,0 +1,8 @@
+{
+  "name": "Bail 12 mois",
+  "description": "Bail d'un an reconductible tacitement",
+  "timeRange": "months",
+  "numberOfTerms": 12,
+  "renewable": true,
+  "templates": []
+}
