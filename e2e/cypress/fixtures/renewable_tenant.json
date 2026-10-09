@@ -1,6 +1,14 @@
 {
   "name": "Léa Fontaine",
   "isCompany": false,
+  "address": {
+    "street1": "8 rue des Lilas",
+    "street2": "",
+    "zipCode": "75011",
+    "city": "Paris",
+    "state": "Île-de-France",
+    "country": "France"
+  },
   "contacts": [
     {
       "name": "Léa Fontaine",

@@ -33,7 +33,9 @@ const tenant = {
   }
 };
 
-describe('Tacit renewal', () => {
+// The three tests walk one continuous scenario, so the Cypress default of
+// clearing the session between tests would sign the user out mid-way.
+describe('Tacit renewal', { testIsolation: false }, () => {
   before(() => {
     cy.resetAppData();
     cy.signUp(userWithCompanyAccount);
@@ -87,10 +89,11 @@ describe('Tacit renewal', () => {
     cy.get('[role=dialog]').contains('button', t('Continue')).click();
 
     cy.get('button[role=tab]').contains(t('Lease')).click();
-    cy.get('input[name=endDate]').should(
-      'have.value',
-      renewedEnd.format('DD/MM/YYYY')
-    );
+    // the end date field is a popover trigger showing the formatted date
+    cy.get('label[for="endDate"]')
+      .parent()
+      .find('button')
+      .should('contain.text', renewedEnd.format('DD/MM/YYYY'));
 
     cy.intercept('PATCH', '**/api/v2/tenants/**').as('updateTenant');
     cy.get('[data-cy=submit]').click();

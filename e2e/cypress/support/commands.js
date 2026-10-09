@@ -4,6 +4,7 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 import i18n from './i18n';
+import moment from 'moment';
 
 Cypress.Commands.add('resetAppData', () => {
   const apiBaseUrl = Cypress.env('GATEWAY_BASEURL');
@@ -40,8 +41,8 @@ Cypress.Commands.add(
   ({ orgName, locale, currency, company }) => {
     cy.get('[data-cy=companyFalse]').click();
     cy.get('input[name=name]').type(orgName);
-    cy.muiSelect('locale', locale);
-    cy.muiSelect('currency', currency);
+    cy.selectField('locale', locale);
+    cy.selectField('currency', currency);
     if (company) {
       const { name, legalRepresentative, legalStructure, ein, capital } =
         company;
@@ -62,8 +63,9 @@ Cypress.Commands.add(
     cy.get('[data-cy=shortcutCreateContract]').click();
     cy.get('input[name=name]').type(name);
     cy.get('[data-cy=submitContract]').click();
-    cy.get('textarea[name=description]').type(description);
-    cy.muiSelect('timeRange', timeRange);
+    // the description is a TextField, which always renders an input
+    cy.get('input[name=description]').type(description);
+    cy.selectField('timeRange', timeRange);
     cy.get('input[name=numberOfTerms]').type(numberOfTerms);
     if (renewable) {
       // the lease form has a single checkbox: the tacit renewal flag
@@ -123,7 +125,7 @@ Cypress.Commands.add(
     cy.get('input[name=name]').type(name);
     cy.get('[data-cy=submitProperty]').click();
     cy.contains(i18n.getFixedT('fr-FR')('Property information'));
-    cy.muiSelectText(
+    cy.selectFieldText(
       'type',
       i18n.getFixedT('fr-FR')(type.replace(/^./, type[0].toUpperCase()))
     );
@@ -181,14 +183,15 @@ Cypress.Commands.add(
 
     if (lease) {
       const { contract, beginDate, properties } = lease;
-      cy.muiSelectText('leaseId', contract);
-      cy.get('input[name=beginDate]').clear();
-      cy.get('input[name=beginDate]').type(beginDate);
+      cy.selectFieldText('leaseId', contract);
+      // the end date derives from the lease duration; selecting the property
+      // afterwards seeds its expense window with the contract dates
+      cy.pickDate('beginDate', beginDate);
       properties.forEach(({ name, expense, entryDate, exitDate }, index) => {
         if (index > 0) {
           cy.get('[data-cy=addPropertiesItem]').click();
         }
-        cy.muiSelectText(`properties[${index}]._id`, name);
+        cy.selectFieldText(`properties[${index}]._id`, name);
         cy.get(`input[name="properties[${index}].expenses[0].title"]`).type(
           expense.title
         );
@@ -196,10 +199,8 @@ Cypress.Commands.add(
         cy.get(`input[name="properties[${index}].expenses[0].amount"]`).type(
           expense.amount
         );
-        cy.get(`input[name="properties[${index}].entryDate"]`).clear();
-        cy.get(`input[name="properties[${index}].entryDate"]`).type(entryDate);
-        cy.get(`input[name="properties[${index}].exitDate"]`).clear();
-        cy.get(`input[name="properties[${index}].exitDate"]`).type(exitDate);
+        cy.pickDate(`properties[${index}].entryDate`, entryDate);
+        cy.pickDate(`properties[${index}].exitDate`, exitDate);
       });
     }
     cy.get('[data-cy=submit]').click();
@@ -257,14 +258,67 @@ Cypress.Commands.add('navOrgMenu', (pageName) => {
   cy.checkPage(pageName);
 });
 
-Cypress.Commands.add('muiSelect', (name, value) => {
-  cy.get(`input[name="${name}"]`).parent().click();
-  cy.get(`.MuiList-root [data-value="${value}"]`).click();
+// The app's select fields are radix comboboxes: a trigger button rendered
+// next to a hidden native <select> that carries the field name and the
+// value -> label mapping. Options open in a portaled [role=listbox] and only
+// expose their label, so picking by value goes through the native select to
+// resolve the label first.
+const openSelectField = (name) =>
+  cy
+    .get(`select[name="${name}"]`)
+    .parent()
+    .find('button[role=combobox]')
+    .click();
+
+const exactText = (text) =>
+  new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+
+Cypress.Commands.add('selectField', (name, value) => {
+  cy.get(`select[name="${name}"] option[value="${value}"]`)
+    .invoke('text')
+    .then((label) => {
+      openSelectField(name);
+      cy.contains('[role=listbox] [role=option]', exactText(label.trim())).click();
+    });
 });
 
-Cypress.Commands.add('muiSelectText', (name, text) => {
-  cy.get(`input[name="${name}"]`).parent().click();
-  cy.get('.MuiList-root').contains(text).click();
+Cypress.Commands.add('selectFieldText', (name, text) => {
+  openSelectField(name);
+  cy.contains('[role=listbox] [role=option]', text).click();
+});
+
+// Date fields are popover calendars without an input. Open the field through
+// its label, step the calendar to the target month (the caption is localized,
+// so it is parsed with the organization locale), then pick the day. Outside
+// days belong to the neighbouring months and must not be matched.
+Cypress.Commands.add('pickDate', (name, date, locale = 'fr') => {
+  const target = moment(date, 'DD/MM/YYYY');
+
+  cy.get(`label[for="${name}"]`).parent().find('button').click();
+
+  const navigate = () => {
+    cy.get('[role=dialog] div.text-sm.font-medium')
+      .first()
+      .invoke('text')
+      .then((caption) => {
+        const displayed = moment(caption.trim(), 'MMMM YYYY', locale);
+        const diff = target
+          .clone()
+          .startOf('month')
+          .diff(moment(displayed).startOf('month'), 'months');
+        if (diff === 0) {
+          cy.get('[role=dialog] button[name=day]:not(.day-outside)')
+            .contains(new RegExp(`^${target.date()}$`))
+            .click();
+        } else {
+          cy.get(
+            `[role=dialog] button[name="${diff < 0 ? 'previous-month' : 'next-month'}"]`
+          ).click();
+          navigate();
+        }
+      });
+  };
+  navigate();
 });
 
 Cypress.Commands.add('checkUrl', (url) => {

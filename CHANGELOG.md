@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - A tenant created through the API with VAT or a contract discount got a rent schedule without them until the first edit regenerated it; the schedule now includes VAT and discount from the start. (The landlord UI was unaffected: it sets the contract dates in a later update, which already applied them.)
 - The first-access page (registering the organization of a brand-new account) crashed with a client-side exception: the landlord form read the signature off an organization that does not exist yet. Found by the new tacit-renewal e2e suite.
+- In the new-tenant stepper, selecting a lease or a property did nothing beyond storing the value: the select fields lost their change callback in the MUI migration. Selecting a property now prefills its rent and seeds the expense window with the contract dates again, and selecting a lease tracks its duration so the end date derives from the start date. Found by the new tacit-renewal e2e suite.
 
 - Tacit renewal now carries the expense date windows forward with the contract end. The tenant form dates every expense over the contract window, so renewed terms were billing the rent without the charges — the renewed months now charge rent and expenses, like every other month.
 - Successive tacit renewals extended the contract by the whole begin→end span, which doubles after every renewal (a 1-year lease renewed to 2 years, then 4, then 8…). The renewal now rolls forward by the lease duration (its number of terms), as a tacit renewal should.
