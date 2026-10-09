@@ -50,7 +50,16 @@ async function _findOccupants(realm, tenantId, startTerm, endTerm) {
 // renewal happen automatically when the rents are browsed or paid, since there
 // is no background scheduler.
 async function _renewLapsedContracts(realm, untilMoment, tenantId) {
-  const query = { realmId: realm._id };
+  // Only a lapsed, non-terminated contract can renew: filter in the query so
+  // browsing rents does not load every tenant of the realm. Whether the lease
+  // is renewable lives on the populated lease, so that check stays in the
+  // loop (the other guards too, as a safety net against odd documents).
+  const query = {
+    realmId: realm._id,
+    terminationDate: null,
+    beginDate: { $ne: null },
+    endDate: { $lt: untilMoment.toDate() }
+  };
   if (tenantId) {
     query._id = tenantId;
   }
@@ -71,35 +80,52 @@ async function _renewLapsedContracts(realm, untilMoment, tenantId) {
     }
 
     try {
+      const frequency = tenant.frequency || 'months';
       const contract = {
-        begin: tenant.beginDate,
-        end: tenant.endDate,
-        frequency: tenant.frequency || 'months',
-        properties: tenant.properties,
-        vatRate: tenant.vatRatio,
-        discount: tenant.discount,
-        rents: tenant.rents
+        ...Contract.fromTenant(tenant),
+        // Renew by the lease duration, not by the stored begin->end span,
+        // which already includes past renewals. Only trustworthy when the
+        // rents run on the lease's own time range.
+        renewalTerms:
+          tenant.leaseId.timeRange === frequency
+            ? tenant.leaseId.numberOfTerms
+            : undefined
       };
 
       const renewed = Contract.renewUntil(contract, untilMoment);
       if (renewed.rents.length > tenant.rents.length) {
         // The occupancy end of each rented property moves with the contract
-        // end. Persist those fields one by one: re-casting the whole properties
-        // array would re-cast the embedded property snapshot with it, which
-        // throws a CastError on lean documents.
+        // end, and so do the expense date windows. Persist those fields one by
+        // one: re-casting the whole properties array would re-cast the
+        // embedded property snapshot with it, which throws a CastError on lean
+        // documents.
         const fieldsToUpdate = {
           endDate: renewed.end,
           rents: renewed.rents
         };
-        renewed.properties?.forEach(({ exitDate }, index) => {
+        renewed.properties?.forEach(({ exitDate, expenses }, index) => {
           if (exitDate) {
             fieldsToUpdate[`properties.${index}.exitDate`] = exitDate;
+          }
+          if (expenses?.length) {
+            fieldsToUpdate[`properties.${index}.expenses`] = expenses;
           }
         });
 
         await Collections.Tenant.updateOne(
           { _id: tenant._id, realmId: realm._id },
-          { $set: fieldsToUpdate }
+          {
+            $set: fieldsToUpdate,
+            // Audit trail: when the renewal ran and how far it rolled the end
+            // date (one run can cover several lease durations after a lapse).
+            $push: {
+              renewals: {
+                renewedOn: new Date(),
+                previousEndDate: tenant.endDate,
+                newEndDate: renewed.end
+              }
+            }
+          }
         );
       }
     } catch (error) {
@@ -273,15 +299,7 @@ async function _updateByTerm(
     realmId: realm._id
   }).lean();
 
-  const contract = {
-    frequency: occupant.frequency || 'months',
-    begin: occupant.beginDate,
-    end: occupant.endDate,
-    discount: occupant.discount || 0,
-    vatRate: occupant.vatRatio,
-    properties: occupant.properties,
-    rents: occupant.rents
-  };
+  const contract = Contract.fromTenant(occupant);
 
   const settlements = {
     payments: [],

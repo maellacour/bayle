@@ -115,6 +115,10 @@ function Tenant() {
               return toast.error(t('Tenant name is missing'));
             case 403:
               return toast.error(t('You are not allowed to update the tenant'));
+            case 409:
+              return toast.error(
+                t('This change would drop rents that have already been paid')
+              );
             default:
               return toast.error(t('Something went wrong'));
           }

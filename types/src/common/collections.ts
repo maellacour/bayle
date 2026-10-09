@@ -249,6 +249,12 @@ export namespace CollectionTypes {
     beginDate: Date;
     endDate: Date;
     terminationDate: Date;
+    // Tacit renewal audit trail: one entry per automatic renewal run.
+    renewals: {
+      renewedOn: Date;
+      previousEndDate: Date;
+      newEndDate: Date;
+    }[];
     properties:
       | {
           propertyId: string;

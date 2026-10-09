@@ -9,6 +9,21 @@ function toContractMoment(date) {
   return typeof date === 'string' ? moment(date, 'DD/MM/YYYY') : moment(date);
 }
 
+// The contract shape the rent engine works on, built from a tenant document.
+// Shared by every caller so they cannot drift apart on which fields the
+// engine sees (frequency fallback, vat/discount, rents history).
+export function fromTenant(tenant) {
+  return {
+    begin: tenant.beginDate,
+    end: tenant.endDate,
+    frequency: tenant.frequency || 'months',
+    properties: tenant.properties,
+    vatRate: tenant.vatRatio,
+    discount: tenant.discount,
+    rents: tenant.rents
+  };
+}
+
 export function create(contract) {
   const supportedFrequencies = ['hours', 'days', 'weeks', 'months', 'years'];
 
@@ -98,7 +113,6 @@ export function update(inputContract, modification) {
       .forEach((paidRent) => {
         payTerm(updatedContract, paidRent.term, {
           payments: paidRent.payments,
-          vats: paidRent.vats.filter((vat) => vat.origin === 'settlement'),
           discounts: paidRent.discounts.filter(
             (discount) => discount.origin === 'settlement'
           ),
@@ -130,25 +144,42 @@ export function renew(contract) {
 // fills it with that date and forbids going beyond it. A renewal has to carry
 // it forward, otherwise every renewed term falls outside the property's
 // occupancy window, tasks/1_base.js filters the property out, and the renewed
-// rents bill nothing. An exitDate deliberately set before the contract end - a
-// property handed back ahead of the others - is left where it is.
+// rents bill nothing. The same applies to the expense date windows, which the
+// tenant form also seeds with the contract dates - left behind, the renewed
+// terms would bill the rent without the charges. An exitDate or expense window
+// deliberately set before the contract end is left where it is.
 function _extendOccupancy(properties, previousEnd, newEnd) {
   return (properties || []).map((property) => {
-    if (!property.exitDate) {
-      return property;
+    const extended = { ...property };
+
+    if (
+      property.exitDate &&
+      toContractMoment(property.exitDate).isSame(previousEnd, 'day')
+    ) {
+      extended.exitDate = newEnd.toDate();
     }
 
-    return toContractMoment(property.exitDate).isSame(previousEnd, 'day')
-      ? { ...property, exitDate: newEnd.toDate() }
-      : property;
+    if (property.expenses?.length) {
+      extended.expenses = property.expenses.map((expense) =>
+        expense.endDate &&
+        toContractMoment(expense.endDate).isSame(previousEnd, 'day')
+          ? { ...expense, endDate: newEnd.toDate() }
+          : expense
+      );
+    }
+
+    return extended;
   });
 }
 
 // Tacit renewal (reconduction tacite): roll the contract end forward by whole
-// contract durations until it covers `untilDate`, regenerating the rents while
-// preserving existing payments. Returns the contract unchanged when it is not
-// renewable in practice (no valid span, already terminated, or already covers
-// the target date).
+// lease durations until it covers `untilDate`, regenerating the rents while
+// preserving existing payments. The duration comes from `renewalTerms` (the
+// lease's number of terms) when provided; deriving it from begin->end is only
+// a fallback, since that span grows with every renewal and would double the
+// extension each time. Returns the contract unchanged when it is not renewable
+// in practice (no valid span, already terminated, or already covers the target
+// date).
 export function renewUntil(inputContract, untilDate) {
   if (inputContract.termination) {
     return inputContract;
@@ -159,7 +190,8 @@ export function renewUntil(inputContract, untilDate) {
   const momentUntil = toContractMoment(untilDate);
 
   const spanTerms = Math.round(
-    momentEnd.diff(momentBegin, inputContract.frequency, true)
+    inputContract.renewalTerms ||
+      momentEnd.diff(momentBegin, inputContract.frequency, true)
   );
   if (spanTerms < 1 || !momentEnd.isBefore(momentUntil)) {
     return inputContract;

@@ -51,6 +51,17 @@ const TenantSchema = new mongoose.Schema<CollectionTypes.Tenant>({
   beginDate: Date,
   endDate: Date,
   terminationDate: Date,
+  // Tacit renewal audit trail: one entry per automatic renewal run, recording
+  // how far the end date was rolled forward (a run that catches up a long
+  // lapse can cover several lease durations at once).
+  renewals: [
+    {
+      _id: false,
+      renewedOn: Date,
+      previousEndDate: Date,
+      newEndDate: Date
+    }
+  ],
   properties: [
     {
       _id: false,

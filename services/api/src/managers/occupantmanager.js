@@ -249,12 +249,7 @@ export async function add(req, res) {
       occupant.endDate &&
       _propertiesHaveRentData(occupant.properties)
     ) {
-      const contract = Contract.create({
-        begin: occupant.beginDate,
-        end: occupant.endDate,
-        frequency: occupant.frequency,
-        properties: occupant.properties
-      });
+      const contract = Contract.create(Contract.fromTenant(occupant));
 
       occupant.rents = contract.rents;
     }
@@ -326,21 +321,11 @@ export async function update(req, res) {
     try {
       const termFrequency = newOccupant.frequency;
 
+      // The schedule is regenerated from the original contract (so existing
+      // payments can be re-applied) with the modification layered on top.
       const contract = {
-        begin: originalOccupant.beginDate,
-        end: originalOccupant.endDate,
-        frequency: termFrequency,
-        terms: Math.ceil(
-          moment(originalOccupant.endDate).diff(
-            moment(originalOccupant.beginDate),
-            termFrequency,
-            true
-          )
-        ),
-        properties: originalOccupant.properties,
-        vatRate: originalOccupant.vatRatio,
-        discount: originalOccupant.discount,
-        rents: originalOccupant.rents
+        ...Contract.fromTenant(originalOccupant),
+        frequency: termFrequency
       };
 
       const modification = {

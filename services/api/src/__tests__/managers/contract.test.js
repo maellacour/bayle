@@ -691,6 +691,90 @@ describe('contract functionalities', () => {
     });
   });
 
+  it('renewUntil carries dated expense windows forward with the contract end', () => {
+    // The tenant form dates every expense over the contract window, so a
+    // renewal has to move those windows too - otherwise the renewed terms
+    // bill the rent without the charges.
+    const contract = Contract.create({
+      begin: Date.parse('2025-01-01T00:00:00'),
+      end: Date.parse('2025-12-31T23:59:59'),
+      frequency: 'months',
+      properties: [
+        {
+          propertyId: 'p1',
+          rent: 1000,
+          entryDate: Date.parse('2025-01-01T00:00:00'),
+          exitDate: Date.parse('2025-12-31T23:59:59'),
+          expenses: [
+            {
+              title: 'General expenses',
+              amount: 100,
+              beginDate: new Date('2025-01-01T00:00:00'),
+              endDate: new Date('2025-12-31T23:59:59')
+            },
+            {
+              // a one-off expense that ended mid-contract, on purpose
+              title: 'One-off works',
+              amount: 50,
+              beginDate: new Date('2025-03-01T00:00:00'),
+              endDate: new Date('2025-06-30T23:59:59')
+            }
+          ],
+          property: { _id: 'p1', name: 'Flat' }
+        }
+      ]
+    });
+
+    const renewed = Contract.renewUntil(
+      contract,
+      Date.parse('2026-06-15T00:00:00')
+    );
+
+    const expenses = renewed.properties[0].expenses;
+    expect(moment(expenses[0].endDate).format('YYYY-MM-DD')).toBe(
+      '2026-12-31'
+    );
+    expect(moment(expenses[1].endDate).format('YYYY-MM-DD')).toBe(
+      '2025-06-30'
+    );
+    // every renewed term bills rent + general expenses, not the rent alone
+    renewed.rents.slice(12).forEach((rent) => {
+      expect(rent.charges.reduce((sum, { amount }) => sum + amount, 0)).toBe(
+        100
+      );
+    });
+  });
+
+  it('renewUntil rolls by the lease duration, not the already-renewed span', () => {
+    // After a first renewal the stored begin->end covers two durations. The
+    // next renewal must still extend by one lease duration (renewalTerms),
+    // not by the whole span - otherwise the extension doubles every time.
+    const contract = Contract.create({
+      begin: Date.parse('2025-01-01T00:00:00'),
+      end: Date.parse('2026-12-31T23:59:59'), // 12-month lease renewed once
+      frequency: 'months',
+      properties: [
+        {
+          propertyId: 'p1',
+          rent: 1000,
+          entryDate: Date.parse('2025-01-01T00:00:00'),
+          exitDate: Date.parse('2026-12-31T23:59:59'),
+          expenses: [],
+          property: { _id: 'p1', name: 'Flat' }
+        }
+      ],
+      renewalTerms: 12
+    });
+
+    const renewed = Contract.renewUntil(
+      contract,
+      Date.parse('2027-01-15T00:00:00')
+    );
+
+    expect(moment(renewed.end).format('YYYY-MM-DD')).toBe('2027-12-31');
+    expect(renewed.rents).toHaveLength(36);
+  });
+
   it('renewUntil completes the final period that the old end cut short', () => {
     // a 4-week contract ending mid-week: the last term was prorated at 2/7
     const contract = Contract.create({
