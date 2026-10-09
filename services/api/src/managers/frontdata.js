@@ -294,15 +294,23 @@ export function toOccupantData(inputOccupant) {
 
   occupant.hasContactEmails = occupant.contactEmails.length > 0;
 
-  // Compute if contract is completed
+  // Compute if contract is completed. A renewable lease rolls its end date
+  // forward on the next rent access, so a lapsed end date does not mean the
+  // contract is over - only a termination date does.
   occupant.status = 'inprogress';
   occupant.terminated = false;
+  const renewsAutomatically =
+    !!occupant.leaseId?.renewable && !occupant.terminationDate;
   const currentDate = moment();
   const endMoment = moment(
     occupant.terminationDate || occupant.endDate,
     'DD/MM/YYYY'
   );
-  if (endMoment.isValid() && endMoment.isBefore(currentDate, 'day')) {
+  if (
+    !renewsAutomatically &&
+    endMoment.isValid() &&
+    endMoment.isBefore(currentDate, 'day')
+  ) {
     occupant.terminated = true;
     occupant.status = 'stopped';
   }

@@ -18,7 +18,9 @@ jest.unstable_mockModule('@bayle/common', () => ({
     Tenant: {
       find: (filter) => {
         tenantFilter = filter;
-        return Promise.resolve(dbTenants);
+        const query = Promise.resolve(dbTenants);
+        query.populate = () => query;
+        return query;
       }
     },
     Property: {
@@ -59,7 +61,8 @@ function tenant({
   rents = [],
   guaranty = 0,
   guarantyPayback = 0,
-  guarantyPaybackDate = null
+  guarantyPaybackDate = null,
+  leaseId = null
 }) {
   const doc = {
     _id,
@@ -70,7 +73,8 @@ function tenant({
     rents,
     guaranty,
     guarantyPayback,
-    guarantyPaybackDate
+    guarantyPaybackDate,
+    leaseId
   };
   doc.toObject = () => doc;
   return doc;
@@ -103,6 +107,25 @@ describe('dashboardmanager', () => {
     const result = await run();
 
     expect(result.overview).toBeNull();
+  });
+
+  it('counts a lapsed renewable lease as an active tenant', async () => {
+    dbPropertyCount = 1;
+    dbTenants = [
+      // end date in the past, but the lease renews automatically on the next
+      // rent access - still an active tenant
+      tenant({
+        _id: 'renewing',
+        endsInMonths: -2,
+        leaseId: { _id: 'l1', renewable: true }
+      }),
+      // lapsed and not renewable: gone
+      tenant({ _id: 'gone', endsInMonths: -2 })
+    ];
+
+    const { overview } = await run();
+
+    expect(overview.tenantCount).toBe(1);
   });
 
   describe('arrears', () => {

@@ -10,7 +10,7 @@ import { useField, useFormikContext } from 'formik';
 import { cn } from '../../utils';
 import FormField from './FormField';
 
-export function SelectField({ values = [], disabled, ...props }) {
+export function SelectField({ values = [], disabled, onChange, ...props }) {
   const [field, meta] = useField(props);
   const { isSubmitting } = useFormikContext();
   const hasError = !!(meta.touched && meta.error);
@@ -18,7 +18,11 @@ export function SelectField({ values = [], disabled, ...props }) {
   const overridenField = {
     ...field,
     onValueChange: (value) => {
-      field.onChange({ target: { value, name: field.name } });
+      const event = { target: { value, name: field.name } };
+      field.onChange(event);
+      // radix knows nothing of the MUI-style onChange prop callers rely on
+      // (lease duration tracking, property rent/expense seeding): call it.
+      onChange?.(event);
     }
   };
 

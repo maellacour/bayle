@@ -11,16 +11,19 @@ export async function all(req, res) {
   const beginOfTheYear = moment(now).startOf('year');
   const endOfTheYear = moment(now).endOf('year');
 
-  // count active tenants
+  // count active tenants. A renewable lease whose end date has lapsed is
+  // still active: its end rolls forward on the next rent access.
   const allTenants = await Collections.Tenant.find({
     realmId: req.headers.organizationid
-  });
+  }).populate('leaseId');
   const activeTenants = allTenants.reduce((acc, tenant) => {
     const terminationMoment = tenant.terminationDate
       ? moment(tenant.terminationDate)
       : moment(tenant.endDate);
+    const renewsAutomatically =
+      !!tenant.leaseId?.renewable && !tenant.terminationDate;
 
-    if (terminationMoment.isSameOrAfter(now, 'day')) {
+    if (renewsAutomatically || terminationMoment.isSameOrAfter(now, 'day')) {
       acc.push(tenant);
     }
 

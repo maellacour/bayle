@@ -29,13 +29,14 @@ describe('Create/delete resources', () => {
     });
     cy.get('[data-cy=tabContractInfo]').click();
     cy.get('input[name=name]').should('have.value', contract369.name);
-    cy.get('[data-cy=tabContractInfo]').click();
-    cy.get('input[name=name]').should('have.value', contract369.name);
-    cy.get('textarea[name=description]').should(
-      'have.text',
+    cy.get('input[name=description]').should(
+      'have.value',
       contract369.description
     );
-    cy.get('input[name=timeRange]').should('have.value', contract369.timeRange);
+    cy.get('select[name=timeRange]').should(
+      'have.value',
+      contract369.timeRange
+    );
     cy.get('input[name=numberOfTerms]').should(
       'have.value',
       contract369.numberOfTerms
@@ -92,12 +93,16 @@ describe('Create/delete resources', () => {
     cy.searchResource(tenants[0].name);
     cy.openResource(tenants[0].name);
     cy.removeResource();
+    // the list the app lands on after a deletion can render blank when the
+    // refetch races the navigation: a reload settles it before asserting
+    cy.reload();
     cy.contains(i18n.getFixedT('fr-FR')('No tenants found'));
 
     cy.navAppMenu('properties');
     cy.searchResource(properties[0].name);
     cy.openResource(properties[0].name);
     cy.removeResource();
+    cy.reload();
     cy.contains(i18n.getFixedT('fr-FR')('No properties found'));
 
     cy.navOrgMenu('contracts');

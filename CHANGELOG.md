@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-09
+
+### Added
+
+- Tacit renewals now leave an audit trail on the tenant: each automatic renewal records when it ran and how far it rolled the end date (`renewals` on the tenant document). The tenant's Lease card shows the number of renewals.
+
+### Changed
+
+- Browsing or paying rents no longer loads every tenant of the organization to look for contracts to renew: only lapsed, non-terminated contracts are fetched. On organizations with many tenants this makes every rents view lighter.
+
+### Fixed
+
+- A tenant created through the API with VAT or a contract discount got a rent schedule without them until the first edit regenerated it; the schedule now includes VAT and discount from the start. (The landlord UI was unaffected: it sets the contract dates in a later update, which already applied them.)
+- The first-access page (registering the organization of a brand-new account) crashed with a client-side exception: the landlord form read the signature off an organization that does not exist yet. Found by the new tacit-renewal e2e suite.
+- In the new-tenant stepper, selecting a lease or a property did nothing beyond storing the value: the select fields lost their change callback in the MUI migration. Selecting a property now prefills its rent and seeds the expense window with the contract dates again, and selecting a lease tracks its duration so the end date derives from the start date. Found by the new tacit-renewal e2e suite.
+
+- Tacit renewal now carries the expense date windows forward with the contract end. The tenant form dates every expense over the contract window, so renewed terms were billing the rent without the charges — the renewed months now charge rent and expenses, like every other month.
+- Successive tacit renewals extended the contract by the whole begin→end span, which doubles after every renewal (a 1-year lease renewed to 2 years, then 4, then 8…). The renewal now rolls forward by the lease duration (its number of terms), as a tacit renewal should.
+- Opening the lease form of a renewed contract snapped the end date back to begin + one lease duration, which made the (renewed) property exit dates fail validation with "Date not included in the contract date range" on fields that were never touched, and saving would silently drop the renewed terms — or fail with "Something went wrong" when rents in them were paid. The form now keeps the stored end date and only recomputes it when the start date or the lease actually changes.
+- A renewable lease whose end date had lapsed but had not yet rolled forward (that happens on the next rent access) displayed as "Lease ended" / "Terminated" and was dropped from the dashboard's active-tenant figures. It now counts and displays as running, and the tenant's lease status shows "In progress (automatic renewal)".
+- Editing a tenant in a way that would drop paid rents now explains itself ("This change would drop rents that have already been paid") instead of the generic "Something went wrong".
+
 ## [2.3.0] - 2026-09-15
 
 ### Changed

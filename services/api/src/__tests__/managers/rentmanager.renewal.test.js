@@ -53,7 +53,8 @@ function buildTenant({
   legacy = false,
   begin = Date.parse('2016-01-01T00:00:00'),
   end = Date.parse('2024-12-31T23:59:59'),
-  numberOfTerms = 108
+  numberOfTerms = 108,
+  expenses = []
 } = {}) {
   const properties = [
     {
@@ -67,7 +68,7 @@ function buildTenant({
         type: 'office'
       },
       rent: 1000,
-      expenses: []
+      expenses
     }
   ];
   const generated = Contract.create({ begin, end, frequency, properties });
@@ -126,7 +127,11 @@ async function renewFor(tenant, term) {
     // ignored
   }
 
-  return { updateOne, $set: updateOne.mock.calls[0]?.[1]?.$set };
+  return {
+    updateOne,
+    $set: updateOne.mock.calls[0]?.[1]?.$set,
+    $push: updateOne.mock.calls[0]?.[1]?.$push
+  };
 }
 
 const daysBetweenTerms = (rents) =>
@@ -153,28 +158,10 @@ describe('rentmanager tacit renewal', () => {
 
   it('rolls the end date forward and persists it when a renewable contract has lapsed', async () => {
     const tenant = buildTenant();
-    jest.spyOn(Collections.Tenant, 'find').mockReturnValue(mockFind([tenant]));
-    const updateOne = jest
-      .spyOn(Collections.Tenant, 'updateOne')
-      .mockResolvedValue({});
 
-    const req = {
-      realm: { _id: tenant.realmId },
-      params: { id: tenant._id, term: '2030120100' },
-      headers: {}
-    };
-    const res = { json: jest.fn() };
-
-    // The subsequent read (no matching rent for that far term with the
-    // stale fixture) may throw; the renewal we assert on runs before it.
-    try {
-      await RentManager.rentOfOccupantByTerm(req, res);
-    } catch {
-      // ignored
-    }
+    const { updateOne, $set } = await renewFor(tenant, '2030120100');
 
     expect(updateOne).toHaveBeenCalledTimes(1);
-    const { $set } = updateOne.mock.calls[0][1];
     // one full duration (108 months) rolled forward => 216 terms
     expect($set.rents.length).toBe(108 * 2);
     expect(new Date($set.endDate).getFullYear()).toBe(2033);
@@ -182,23 +169,8 @@ describe('rentmanager tacit renewal', () => {
 
   it('does not renew a contract whose lease is not renewable', async () => {
     const tenant = buildTenant({ renewable: false });
-    jest.spyOn(Collections.Tenant, 'find').mockReturnValue(mockFind([tenant]));
-    const updateOne = jest
-      .spyOn(Collections.Tenant, 'updateOne')
-      .mockResolvedValue({});
 
-    const req = {
-      realm: { _id: tenant.realmId },
-      params: { id: tenant._id, term: '2030120100' },
-      headers: {}
-    };
-    const res = { json: jest.fn() };
-
-    try {
-      await RentManager.rentOfOccupantByTerm(req, res);
-    } catch {
-      // ignored
-    }
+    const { updateOne } = await renewFor(tenant, '2030120100');
 
     expect(updateOne).not.toHaveBeenCalled();
   });
@@ -250,6 +222,92 @@ describe('rentmanager tacit renewal', () => {
     ).toBe(true);
   });
 
+  it('moves the expense windows with the contract end and persists them', async () => {
+    // The tenant form dates every expense over the contract window; a renewal
+    // that leaves the windows behind bills the renewed terms without charges.
+    const tenant = buildTenant({
+      ...WEEKLY,
+      expenses: [
+        {
+          title: 'General expenses',
+          amount: 100,
+          beginDate: new Date(WEEKLY.begin),
+          endDate: new Date(WEEKLY.end)
+        }
+      ]
+    });
+
+    const { $set } = await renewFor(tenant, '2026021600');
+
+    const expenses = $set['properties.0.expenses'];
+    expect(moment(expenses[0].endDate).format('YYYY-MM-DD')).toBe(
+      '2026-03-02'
+    );
+    // the renewed full weeks keep billing rent + charges...
+    $set.rents.slice(5, 8).forEach((rent) => {
+      expect(rent.charges.reduce((sum, { amount }) => sum + amount, 0)).toBe(
+        100
+      );
+    });
+    // ...and the final cut-short week prorates the charges like the rent
+    expect(
+      $set.rents[8].charges.reduce((sum, { amount }) => sum + amount, 0)
+    ).toBe(28.57);
+  });
+
+  it('renews by the lease duration even after a previous renewal widened the span', async () => {
+    // Stored begin->end already covers two 4-week durations, as it does after
+    // a first tacit renewal. The next renewal must add 4 weeks, not 8.
+    const tenant = buildTenant({
+      ...WEEKLY,
+      end: Date.parse('2026-03-02T23:59:59')
+    });
+
+    const { $set } = await renewFor(tenant, '2026030900');
+
+    expect(moment($set.endDate).format('YYYY-MM-DD')).toBe('2026-03-30');
+  });
+
+  it('records an audit entry for the renewal it performed', async () => {
+    const tenant = buildTenant(WEEKLY);
+
+    const { $push } = await renewFor(tenant, '2026021600');
+
+    const entry = $push.renewals;
+    expect(moment(entry.previousEndDate).format('YYYY-MM-DD')).toBe(
+      '2026-02-02'
+    );
+    expect(moment(entry.newEndDate).format('YYYY-MM-DD')).toBe('2026-03-02');
+    expect(entry.renewedOn).toBeInstanceOf(Date);
+  });
+
+  it('queries only lapsed, non-terminated contracts instead of the whole realm', async () => {
+    const tenant = buildTenant(WEEKLY);
+    const find = jest
+      .spyOn(Collections.Tenant, 'find')
+      .mockReturnValue(mockFind([tenant]));
+    jest.spyOn(Collections.Tenant, 'updateOne').mockResolvedValue({});
+
+    try {
+      await RentManager.rentOfOccupantByTerm(
+        {
+          realm: { _id: tenant.realmId },
+          params: { id: tenant._id, term: '2026021600' },
+          headers: {}
+        },
+        { json: jest.fn() }
+      );
+    } catch {
+      // ignored
+    }
+
+    // the first find is the renewal's; _findOccupants comes after
+    const renewalQuery = find.mock.calls[0][0];
+    expect(renewalQuery.terminationDate).toBeNull();
+    expect(renewalQuery.beginDate).toEqual({ $ne: null });
+    expect(renewalQuery.endDate.$lt).toBeInstanceOf(Date);
+  });
+
   it('characterizes the bug: a contract with no stored frequency is never renewed', async () => {
     // Legacy documents written before `frequency` existed on the schema. The
     // renewal reads 'months', so a 4-week contract is regenerated as 3 monthly
@@ -268,23 +326,8 @@ describe('rentmanager tacit renewal', () => {
     const tenant = buildTenant({
       terminationDate: new Date(Date.parse('2018-12-31T23:59:59'))
     });
-    jest.spyOn(Collections.Tenant, 'find').mockReturnValue(mockFind([tenant]));
-    const updateOne = jest
-      .spyOn(Collections.Tenant, 'updateOne')
-      .mockResolvedValue({});
 
-    const req = {
-      realm: { _id: tenant.realmId },
-      params: { id: tenant._id, term: '2030120100' },
-      headers: {}
-    };
-    const res = { json: jest.fn() };
-
-    try {
-      await RentManager.rentOfOccupantByTerm(req, res);
-    } catch {
-      // ignored
-    }
+    const { updateOne } = await renewFor(tenant, '2030120100');
 
     expect(updateOne).not.toHaveBeenCalled();
   });

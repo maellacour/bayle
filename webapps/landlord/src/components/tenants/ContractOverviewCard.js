@@ -22,7 +22,9 @@ export default function ContractOverviewCard() {
           <span>
             {store.tenant.selected.terminated
               ? t('Terminated')
-              : t('In progress')}
+              : store.tenant.selected.lease?.renewable
+                ? t('In progress (automatic renewal)')
+                : t('In progress')}
           </span>
         </div>
         {store.tenant.selected.beginDate && (
@@ -46,6 +48,12 @@ export default function ContractOverviewCard() {
                 'DD/MM/YYYY'
               ).format('L')}
             </span>
+          </div>
+        )}
+        {store.tenant.selected.renewals?.length > 0 && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">{t('Renewals')}</span>
+            <span>{store.tenant.selected.renewals.length}</span>
           </div>
         )}
         <div className="flex justify-between">
