@@ -96,7 +96,8 @@ describe('Tacit renewal', { testIsolation: false }, () => {
       .should('contain.text', renewedEnd.format('DD/MM/YYYY'));
 
     cy.intercept('PATCH', '**/api/v2/tenants/**').as('updateTenant');
-    cy.get('[data-cy=submit]').click();
+    // every tab renders its own form: save the one on the active (Lease) tab
+    cy.get('[role=tabpanel][data-state=active] [data-cy=submit]').click();
     cy.wait('@updateTenant').its('response.statusCode').should('eq', 200);
 
     // the renewal survived the round trip
