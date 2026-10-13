@@ -4,6 +4,13 @@ import moment from 'moment';
 
 const round = (value) => Math.round(value * 100) / 100;
 
+// What a term calls on the tenant to pay. `grandTotal` carries the previous
+// terms' balance: arrears (positive) are taken out — they were already called
+// in their own month — but a credit (negative, rent paid in advance) stays and
+// settles the charge. Never negative: a surplus credit rolls on to later terms.
+const calledAmountOf = (rent) =>
+  Math.max(0, rent.total.grandTotal - Math.max(rent.total.balance, 0));
+
 export async function all(req, res) {
   const now = moment();
   const beginOfTheMonth = moment(now).startOf('month');
@@ -70,10 +77,9 @@ export async function all(req, res) {
     }, 0);
   }
 
-  // what the current month's terms charge, and what has been settled on them.
-  // `grandTotal` carries the previous balance, so the month's own charge is
-  // `grandTotal - balance`; settlements are counted as recorded, which is why
-  // a month catching up on arrears can collect more than it charges.
+  // what the current month's terms call for, and what has been settled on
+  // them. Settlements are counted as recorded, which is why a month catching
+  // up on arrears can collect more than it calls.
   const currentMonth = allTenants.reduce(
     (acc, { rents = [] }) => {
       rents.forEach((rent) => {
@@ -84,7 +90,7 @@ export async function all(req, res) {
         ) {
           return;
         }
-        acc.charged += rent.total.grandTotal - rent.total.balance;
+        acc.charged += calledAmountOf(rent);
         acc.collected += rent.total.payment;
       });
       return acc;
@@ -190,13 +196,13 @@ export async function all(req, res) {
           return;
         }
         const key = termMoment.format('MMYYYY');
-        const thisMonthAmount = rent.total.grandTotal - rent.total.balance;
+        const calledAmount = calledAmountOf(rent);
         const revenue = {
           month: key,
           paid: rent.total.payment,
           notPaid:
-            rent.total.payment - thisMonthAmount < 0
-              ? rent.total.payment - thisMonthAmount
+            rent.total.payment - calledAmount < 0
+              ? rent.total.payment - calledAmount
               : 0
         };
         if (acc[key]) {

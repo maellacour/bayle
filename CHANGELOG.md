@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - The README is rewritten as a product overview for newcomers: what Bayle is, a dashboard screenshot, the features in plain words, a four-screenshot glance at the app and shorter self-hosting instructions. Its links point to the renamed repository (maellacour/bayle).
 
+### Fixed
+
+- A rent paid in advance showed up on the dashboard as unpaid: the "Rents of the year" graph displayed a negative amount on the prepaid month and the "Collected this month" tile kept calling for it, even though the rents page correctly marked the term as paid. Both now recognize the credit carried over from the overpayment — a month settled in advance calls for nothing.
+
 ## [2.4.0] - 2026-10-09
 
 ### Added
