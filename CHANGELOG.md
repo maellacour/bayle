@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-10-13
+
 ### Changed
 
 - The README is rewritten as a product overview for newcomers: what Bayle is, a dashboard screenshot, the features in plain words, a four-screenshot glance at the app and shorter self-hosting instructions. Its links point to the renamed repository (maellacour/bayle).
