@@ -258,6 +258,100 @@ describe('dashboardmanager', () => {
 
       expect(overview.currentMonth).toEqual({ charged: 1000, collected: 1200 });
     });
+
+    it('calls nothing on a month already settled in advance', async () => {
+      dbPropertyCount = 1;
+      dbTenants = [
+        tenant({
+          rents: [
+            // last month the tenant paid two months at once
+            rent({
+              monthsFromNow: -1,
+              charged: 1000,
+              payments: [{ amount: 2000 }]
+            }),
+            // the credit carried over settles the current term
+            rent({ monthsFromNow: 0, charged: 1000, balance: -1000 })
+          ]
+        })
+      ];
+
+      const { overview } = await run();
+
+      expect(overview.currentMonth).toEqual({ charged: 0, collected: 0 });
+    });
+  });
+
+  describe('revenues', () => {
+    // revenues are windowed on the current year: anchor the terms on fixed
+    // months of it so the tests do not depend on today's date
+    const rentIn = (month, opts) =>
+      rent({ ...opts, monthsFromNow: month - moment().month() });
+    const monthKey = (month) => moment().month(month).format('MMYYYY');
+
+    it('does not flag a month settled by an advance payment as unpaid', async () => {
+      dbPropertyCount = 1;
+      dbTenants = [
+        tenant({
+          rents: [
+            // January: two months of rent received at once
+            rentIn(0, { charged: 1000, payments: [{ amount: 2000 }] }),
+            // February: nothing owed, the carried credit settles the term
+            rentIn(1, { charged: 1000, balance: -1000 })
+          ]
+        })
+      ];
+
+      const { revenues } = await run();
+
+      const january = revenues.find((r) => r.month === monthKey(0));
+      const february = revenues.find((r) => r.month === monthKey(1));
+      expect(january).toMatchObject({ paid: 2000, notPaid: 0 });
+      expect(february).toMatchObject({ paid: 0, notPaid: 0 });
+    });
+
+    it('only reports the part of the rent the credit does not cover', async () => {
+      dbPropertyCount = 1;
+      dbTenants = [
+        tenant({
+          rents: [
+            // January: the rent plus 40% of the next one
+            rentIn(0, { charged: 1000, payments: [{ amount: 1400 }] }),
+            rentIn(1, { charged: 1000, balance: -400 })
+          ]
+        })
+      ];
+
+      const { revenues } = await run();
+
+      const february = revenues.find((r) => r.month === monthKey(1));
+      expect(february).toMatchObject({ paid: 0, notPaid: -600 });
+    });
+
+    it('counts arrears once, in the month that was left unpaid', async () => {
+      dbPropertyCount = 1;
+      dbTenants = [
+        tenant({
+          rents: [
+            // January unpaid
+            rentIn(0, { charged: 1000 }),
+            // February: the tenant catches up both months
+            rentIn(1, {
+              charged: 1000,
+              balance: 1000,
+              payments: [{ amount: 2000 }]
+            })
+          ]
+        })
+      ];
+
+      const { revenues } = await run();
+
+      const january = revenues.find((r) => r.month === monthKey(0));
+      const february = revenues.find((r) => r.month === monthKey(1));
+      expect(january).toMatchObject({ paid: 0, notPaid: -1000 });
+      expect(february).toMatchObject({ paid: 2000, notPaid: 0 });
+    });
   });
 
   describe('deposits held', () => {

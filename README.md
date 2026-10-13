@@ -1,133 +1,106 @@
 # Bayle
 
-[![Continuous Integration](https://github.com/maellacour/microrealestate/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/maellacour/microrealestate/actions/workflows/ci.yml)
+[![Continuous Integration](https://github.com/maellacour/bayle/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/maellacour/bayle/actions/workflows/ci.yml)
 
-Bayle is a self-hosted application that helps landlords manage their properties, tenants, leases and rent payments — a single place to keep everything organised.
+Bayle is a free application for landlords. It keeps your properties, tenants, leases and rent payments in one place, so you always know who has paid, who is late and which lease is about to end. You install it on your own server, and your data stays with you.
 
-> Bayle began as a fork of [MicroRealEstate](https://github.com/microrealestate/microrealestate) and has since diverged significantly. It remains free and open source under the MIT License. See [Credits & License](#credits--license).
+> Bayle began as a fork of [MicroRealEstate](https://github.com/microrealestate/microrealestate) and has since diverged significantly. It remains free and open source under the MIT license. See [Credits and license](#credits-and-license).
 
-## Key Features
+[<img src="./docs/pictures/overview.png" alt="The Bayle dashboard: rent collected this month, outstanding rent, unpaid rents that need attention and the state of the portfolio">](./docs/pictures/overview.png)
 
-- **Centralized property and tenant information** — store all property specifications, tenant records and contact details in one convenient location.
+## What you can do with it
 
-- **Rent lease creation** — customizable templates that make generating leases straightforward.
+- Follow the rents month by month: who paid, who is late and what is still owed.
+- Record payments, then send receipts, rent calls and reminders by email.
+- Keep a complete file per tenant: contacts, lease, deposit, documents and payment history.
+- Describe each property once and track its occupancy and revenues over the years.
+- Write your own contract templates and generate leases and letters from tenant data.
+- Give tenants a portal where they check their lease and download their documents.
+- Manage everything alone or invite collaborators into your organization.
 
-- **Rent payment tracking** — a comprehensive system to stay updated on transactions and promptly address overdue payments.
+Leases can renew automatically when they expire, rents can carry VAT and discounts, and the accounting pages give you the yearly figures you need for tax time.
 
-- **Custom document generation** — personalized letters, notices and announcements for clear, consistent correspondence with tenants.
+## A quick look
 
-- **Collaboration** — whether you are an independent landlord or manage a business with multiple collaborators, Bayle supports team task coordination.
+The rents of the month, a tenant file, a property and a contract document being written.
 
-## Screenshots
+<a href="./docs/pictures/rents.png"><img src="./docs/pictures/rents.png" width="49%" alt="The rents page, one row per tenant for the month"></a>
+<a href="./docs/pictures/tenantcontract.png"><img src="./docs/pictures/tenantcontract.png" width="49%" alt="A tenant file with its lease details"></a>
+<a href="./docs/pictures/property.png"><img src="./docs/pictures/property.png" width="49%" alt="A property page with occupancy and revenues"></a>
+<a href="./docs/pictures/contracttemplate.png"><img src="./docs/pictures/contracttemplate.png" width="49%" alt="Writing a contract document"></a>
 
-|                                                                                                                           |                                                                                                                                   |                                                                                                                                       |
-| :-----------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
-|                                                      **Rents page**                                                       |                                                **Send notices, receipt by email**                                                 |                                                            **Pay a rent**                                                             |
-|      [<img src="./docs/pictures/rents.png" alt="drawing" width="200"/>](./docs/pictures/rents.png)      | [<img src="./docs/pictures/sendmassemails.png" alt="drawing" width="200"/>](./docs/pictures/sendmassemails.png) |          [<img src="./docs/pictures/payment.png" alt="drawing" width="200"/>](./docs/pictures/payment.png)          |
-|                                                     **Tenants page**                                                      |                                                        **Tenant details**                                                         |                                                                                                                                       |
-|    [<img src="./docs/pictures/tenants.png" alt="drawing" width="200"/>](./docs/pictures/tenants.png)    | [<img src="./docs/pictures/tenantcontract.png" alt="drawing" width="200"/>](./docs/pictures/tenantcontract.png) |                                                                                                                                       |
-|                                                    **Properties page**                                                    |                                                       **Property details**                                                        |                                                                                                                                       |
-| [<img src="./docs/pictures/properties.png" alt="drawing" width="200"/>](./docs/pictures/properties.png) |       [<img src="./docs/pictures/property.png" alt="drawing" width="200"/>](./docs/pictures/property.png)       |                                                                                                                                       |
-|                                                     **Landlord page**                                                     |                                                        **Template leases**                                                        |                                                         **Author a contract**                                                         |
-|   [<img src="./docs/pictures/landlord.png" alt="drawing" width="200"/>](./docs/pictures/landlord.png)   |         [<img src="./docs/pictures/leases.png" alt="drawing" width="200"/>](./docs/pictures/leases.png)         | [<img src="./docs/pictures/contracttemplate.png" alt="drawing" width="200"/>](./docs/pictures/contracttemplate.png) |
-|                                                        **Members**                                                        |                                                                                                                                   |
-|    [<img src="./docs/pictures/members.png" alt="drawing" width="200"/>](./docs/pictures/members.png)    |                                                                                                                                   |
+More screens are in the [pictures folder](./docs/pictures).
 
-## Self-host the application
+## How it runs
 
-> **Prerequisite**
->
-> - [Install Docker and Compose](https://docs.docker.com/compose/install)
+Bayle is a set of small services behind one entry point: a web application for the landlord, a portal for tenants, a REST API, a PDF generator and an emailer, with MongoDB and Redis for storage. Everything ships as Docker images and starts from a single compose file. The details are in the [developer documentation](./docs/DEVELOPER.md).
 
-### Download the docker-compose.yml file
+## Install it on your server
 
-``` shell
+You need [Docker and Compose](https://docs.docker.com/compose/install) installed.
+
+Download the compose file and the environment template:
+
+```shell
 mkdir bayle
 cd bayle
-curl https://raw.githubusercontent.com/maellacour/microrealestate/main/docker-compose.yml > docker-compose.yml
-curl https://raw.githubusercontent.com/maellacour/microrealestate/main/.env.domain > .env
+curl https://raw.githubusercontent.com/maellacour/bayle/main/docker-compose.yml > docker-compose.yml
+curl https://raw.githubusercontent.com/maellacour/bayle/main/.env.domain > .env
 ```
 
-Update the secrets and tokens in the `.env` file (at the end of the file).
+Open the `.env` file and fill in the secrets and tokens listed at the end of the file.
 
-**🚨 IMPORTANT**
+> **Upgrading from a previous installation?** Copy the secrets, the tokens and the `MONGO_URL` from your previous `.env` file into the new one. With different values the application cannot read the existing database and your credentials no longer work.
 
-In case you previously ran the application, the secrets, the tokens and the MONGO_URL must be reported from previous .env file to the new one.
-Otherwise, the application will not point to the correct database and will not be able to login with the previous credentials.
+Then start the application in the way that fits your setup.
 
-### Localhost setup
+### On your machine
 
-Start the application under localhost:
-
-``` shell
+```shell
 APP_PORT=8080 docker compose --profile local up
 ```
-The application will be available on http://localhost:8080/landlord and http://localhost:8080/tenant.
 
+The application is served on http://localhost:8080/landlord and http://localhost:8080/tenant.
 
-### Ip setup
+### On a server, reached by IP
 
-Start the application under a custom ip:
-
-``` shell
+```shell
 sudo APP_DOMAIN=x.x.x.x docker compose up
 ```
-x.x.x.x is the ip address of the server.
 
-The application will be available on http://x.x.x.x/landlord and http://x.x.x.x/tenant.
+Replace `x.x.x.x` with the address of the server. The application is served on http://x.x.x.x/landlord and http://x.x.x.x/tenant. If you need a specific port, set `APP_PORT` rather than adding the port to `APP_DOMAIN`.
 
-In case you need to use a port number do not pass it in the APP_DOMAIN. You can use the APP_PORT environment variable.
+### On a domain, with https
 
-
-### Domain with https setup
-
-Start the app under a custom domain over https:
-
-``` shell
+```shell
 sudo APP_DOMAIN=app.example.com APP_PROTOCOL=https docker compose up
 ```
 
-Make sure your DNS records are pointing to the private server. The application will automatically issue the ssl certificate.
+Point your DNS records to the server first. The SSL certificate is issued automatically, and the application is served on https://app.example.com/landlord and https://app.example.com/tenant.
 
-The application will be available on https://app.example.com/landlord and https://app.example.com/tenant.
+## Back up and restore
 
+Run these commands while the application is running, from the directory containing the compose file. They assume the default database name `mredb`; if you changed it in the `.env` file, adjust the commands.
 
-### Backup and restore the data
+Create a backup archive in the `backup` folder:
 
-The backup and restore commands can be executed when the application is running to allow connecting to MongoDB.
-
-#### Backup
-
-In the bayle directory run:
-
-``` shell
+```shell
 docker compose run mongo /usr/bin/mongodump --uri=mongodb://mongo/mredb --gzip --archive=./backup/mredb-$(date +%F_%T).dump
 ```
 
-Replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
+Restore one of the archives from the `backup` folder:
 
-The archive file will be placed in the "backup" folder.
-
-#### Restore
-
-In the bayle/backup directory, select an archive file you want to restore.
-
-Then run the restore command:
-
-``` shell
-docker compose run mongo /usr/bin/mongorestore --uri=mongodb://mongo/mredb --drop --gzip --archive=./backup/mredb-XXXX.dump 
+```shell
+docker compose run mongo /usr/bin/mongorestore --uri=mongodb://mongo/mredb --drop --gzip --archive=./backup/mredb-XXXX.dump
 ```
 
-Where mredb-XXXX.dump is the archive file you selected.
+Replace `mredb-XXXX.dump` with the name of the archive you want to restore.
 
-Again, replace "mredb" with the name of your database (see .env file). By default, the database name is "mredb".
+## Development
 
+To run the application in development mode and contribute, follow the [developer documentation](./docs/DEVELOPER.md).
 
-## Developers
-
-To run the application in development mode, follow the steps outlined in the documentation available [here](./docs/DEVELOPER.md)
-
-## Credits & License
+## Credits and license
 
 Bayle is a fork of [MicroRealEstate](https://github.com/microrealestate/microrealestate) by Camel Aissani and contributors, originally released under the MIT License. Bayle continues to be distributed under the MIT License, and the original copyright notice is preserved in [LICENSE](./LICENSE).
 
