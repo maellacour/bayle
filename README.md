@@ -20,46 +20,16 @@ Bayle is a free application for landlords. It keeps your properties, tenants, le
 
 Leases can renew automatically when they expire, rents can carry VAT and discounts, and the accounting pages give you the yearly figures you need for tax time.
 
-## A tour of the app
+## A quick look
 
-### Rents
-
-The rents page shows the current month at a glance. Open a tenant to record a payment, apply a discount or settle an outstanding balance.
+The rents of the month, a tenant file, a property and a contract document being written.
 
 <a href="./docs/pictures/rents.png"><img src="./docs/pictures/rents.png" width="49%" alt="The rents page, one row per tenant for the month"></a>
-<a href="./docs/pictures/payment.png"><img src="./docs/pictures/payment.png" width="49%" alt="Recording a rent payment"></a>
-
-Receipts, rent calls and reminders go out by email, individually or for the whole month at once.
-
-<a href="./docs/pictures/sendmassemails.png"><img src="./docs/pictures/sendmassemails.png" width="60%" alt="Sending notices and receipts by email"></a>
-
-### Tenants
-
-Each tenant has a file with contacts, lease dates, rented properties, deposit and documents. The lease status is always visible, including automatic renewals.
-
-<a href="./docs/pictures/tenants.png"><img src="./docs/pictures/tenants.png" width="49%" alt="The tenants list with lease status"></a>
 <a href="./docs/pictures/tenantcontract.png"><img src="./docs/pictures/tenantcontract.png" width="49%" alt="A tenant file with its lease details"></a>
-
-### Properties
-
-The properties pages show your portfolio, what each property brings in and who occupies it.
-
-<a href="./docs/pictures/properties.png"><img src="./docs/pictures/properties.png" width="49%" alt="The properties list"></a>
 <a href="./docs/pictures/property.png"><img src="./docs/pictures/property.png" width="49%" alt="A property page with occupancy and revenues"></a>
-
-### Contracts and documents
-
-Define the contracts you work with, their duration and payment schedule. Then write document templates once and generate leases, notices and letters filled with the tenant data.
-
-<a href="./docs/pictures/leases.png"><img src="./docs/pictures/leases.png" width="49%" alt="The contract templates"></a>
 <a href="./docs/pictures/contracttemplate.png"><img src="./docs/pictures/contracttemplate.png" width="49%" alt="Writing a contract document"></a>
 
-### Your organization
-
-Set up the landlord identity used on documents, and invite collaborators with their own roles.
-
-<a href="./docs/pictures/landlord.png"><img src="./docs/pictures/landlord.png" width="49%" alt="The landlord settings"></a>
-<a href="./docs/pictures/members.png"><img src="./docs/pictures/members.png" width="49%" alt="Organization members and roles"></a>
+More screens are in the [pictures folder](./docs/pictures).
 
 ## How it runs
 
