@@ -6,7 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [2.4.1] - 2026-10-13
+### Changed
+
+- The email send log now records the outcome of each send: a failed send is logged with its error (previously it left no trace at all), the landlord members copied on the email are recorded, and each entry carries its organization. The log is indexed, the status endpoint reports the send status, and it only returns the caller's own organization's entries (it used to return everyone's). Existing entries are stamped with their organization by the api on first start.
+- Individual landlords are now named by their organization name on PDF documents and emails; it used to be the first contact's name. Companies keep the company name.
+- Dependency updates with security fixes: next 14.2.35, mongoose 6.13.12, multer 2.5.0.
+
+### Fixed
+
+- Sending emails through a custom SMTP server ignored the configured port and always used nodemailer's default (587, or 465 with TLS), so an SMTP relay on any other port was unreachable. The configured port is now used.
+- The SMTP server field in the third-parties settings validated as an email address, so a hostname (`host.docker.internal`, `localhost`, a machine on the LAN...) could not be saved. It now accepts hostnames.
+- Reminder emails could address an individual landlord as "undefined Jane Doe": the legal structure prefix was shown whenever company information existed on the organization — and saving Settings > Billing created it even for individuals. The prefix now only shows for companies with a legal structure set, and the billing form no longer creates company information for individuals.
+- The header of PDF documents never listed the landlord's contact phones and email (broken loop over the contacts).
+- The legal representative never appeared in the company signature of PDF documents (field name typo).
 
 ### Changed
 
