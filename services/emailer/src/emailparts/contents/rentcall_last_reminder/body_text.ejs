@@ -10,7 +10,7 @@
 <%- _.t('We would like to point out that our business agreements with you are stated in a contract signed {{date}}.', { date: _.formatDate(tenant.contract.beginDate, 'LL') }) %>
 <% } -%>
 
-<%- _.t('In this contract, it is explicitly indicated that {{tenant}} is obliged to pay in advance and monthly its rents to {{landlord}}.', { tenant: tenant.name, landlord: (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name }) %>
+<%- _.t('In this contract, it is explicitly indicated that {{tenant}} is obliged to pay in advance and monthly its rents to {{landlord}}.', { tenant: tenant.name, landlord: (landlord.isCompany && landlord.companyInfo.legalStructure ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name }) %>
 
 <%- _.t('So far, one or more rents have not been paid. The current amount of unpaid rents is {{amount}}.', { amount: _.formatNumber(tenant.rents[0].total.grandTotal, 'currency') }) %>
 

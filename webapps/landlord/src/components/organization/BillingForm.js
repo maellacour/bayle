@@ -73,10 +73,16 @@ export default function BillingForm({ organization }) {
   const onSubmit = useCallback(
     async (billing) => {
       const updatedOrganization = mergeOrganization(organization, {
-        companyInfo: {
-          ...organization.companyInfo,
-          vatNumber: billing.vatNumber
-        },
+        // companyInfo only applies to companies: creating it for an
+        // individual landlord makes emails/PDFs treat them as a company
+        ...(organization.isCompany
+          ? {
+              companyInfo: {
+                ...organization.companyInfo,
+                vatNumber: billing.vatNumber
+              }
+            }
+          : {}),
         bankInfo: {
           name: billing.bankName,
           iban: billing.iban

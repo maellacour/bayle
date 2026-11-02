@@ -23,7 +23,7 @@
                     </p>
             
                     <p>
-                        <%- _.t('In this contract, it is explicitly indicated that {{tenant}} is obliged to pay in advance and monthly its rents to {{landlord}}.', { tenant: tenant.name, landlord: (landlord.hasCompanyInfo ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name }) %>
+                        <%- _.t('In this contract, it is explicitly indicated that {{tenant}} is obliged to pay in advance and monthly its rents to {{landlord}}.', { tenant: tenant.name, landlord: (landlord.isCompany && landlord.companyInfo.legalStructure ? landlord.companyInfo.legalStructure + ' ' : '') + landlord.name }) %>
                     </p>
 
                     <p>
