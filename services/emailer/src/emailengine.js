@@ -46,7 +46,7 @@ async function _sendWithSmtp(config, email) {
 
   const transporter = nodemailer.createTransport({
     host: config.server,
-    port: config.ports,
+    port: config.port,
     secure: config.secure,
     auth
   });

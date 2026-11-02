@@ -36,7 +36,8 @@ const validationSchema = Yup.object().shape({
 
   smtp_server: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
-    then: Yup.string().email().required()
+    // a hostname or IP, not an email (e.g. host.docker.internal, 192.168.1.10)
+    then: Yup.string().required()
   }),
   smtp_port: Yup.string().when('emailDeliveryServiceName', {
     is: 'smtp',
