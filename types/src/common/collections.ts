@@ -112,12 +112,15 @@ export namespace CollectionTypes {
 
   export type Email = {
     _id: string;
+    realmId: string;
     templateName: string;
     recordId: string;
     params: Record<string, never>;
     sentTo: string;
+    sentBcc?: string;
     sentDate: Date;
     status: string;
+    errorMessage?: string;
     emailId: string;
   };
 

@@ -3,15 +3,10 @@ import * as EmailContent from './emailcontent.js';
 import * as EmailData from './emaildata.js';
 import * as EmailEngine from './emailengine.js';
 import * as EmailRecipients from './emailrecipients.js';
-import {
-  Collections,
-  logger,
-  Service,
-  ServiceError
-} from '@bayle/common';
+import { Collections, logger, Service, ServiceError } from '@bayle/common';
 
-export async function status(recordId, startTerm, endTerm) {
-  const query = {};
+export async function status(realmId, recordId, startTerm, endTerm) {
+  const query = { realmId: String(realmId) };
   if (recordId) {
     query.recordId = recordId;
   }
@@ -34,7 +29,9 @@ export async function status(recordId, startTerm, endTerm) {
       recordId: true,
       params: true,
       sentTo: true,
-      sentDate: true
+      sentDate: true,
+      status: true,
+      errorMessage: true
     },
     { sort: { sentDate: -1 } }
   ).lean();
@@ -156,16 +153,38 @@ ${email.attachment
 
       let status;
       if (ALLOW_SENDING_EMAILS) {
-        status = await EmailEngine.sendEmail(email, data);
-        new Collections.Email({
+        const emailRecord = {
+          realmId: organizationId ? String(organizationId) : undefined,
           templateName,
           recordId, // tenantId
           params,
           sentTo: recipients.to,
-          sentDate: new Date(),
-          emailId: status.id,
-          status: 'queued'
-        }).save();
+          sentBcc: recipients.bcc,
+          sentDate: new Date()
+        };
+        try {
+          status = await EmailEngine.sendEmail(email, data);
+        } catch (sendError) {
+          try {
+            await new Collections.Email({
+              ...emailRecord,
+              status: 'failed',
+              errorMessage: String(sendError)
+            }).save();
+          } catch (dbError) {
+            logger.error('cannot record the email failure:', dbError);
+          }
+          throw sendError;
+        }
+        try {
+          await new Collections.Email({
+            ...emailRecord,
+            status: 'sent',
+            emailId: status.id
+          }).save();
+        } catch (dbError) {
+          logger.error('cannot record the sent email:', dbError);
+        }
         logger.info(`${templateName} sent to ${recordId} at ${recipients.to}`);
       } else {
         const message = `ALLOW_SENDING_EMAILS set to "false", ${templateName} not sent to ${recordId} at ${recipients.to}`;

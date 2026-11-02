@@ -1,10 +1,5 @@
 import * as Emailer from './emailer.js';
-import {
-  logger,
-  Middlewares,
-  Service,
-  ServiceError
-} from '@bayle/common';
+import { logger, Middlewares, Service, ServiceError } from '@bayle/common';
 import express from 'express';
 import locale from 'locale';
 
@@ -74,6 +69,7 @@ export default function routes() {
     Middlewares.asyncWrapper(async (req, res) => {
       const { startTerm, endTerm } = req.params;
       const result = await Emailer.status(
+        req.realm._id,
         null,
         Number(startTerm),
         endTerm ? Number(endTerm) : null

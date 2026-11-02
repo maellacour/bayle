@@ -172,6 +172,33 @@ async function backfillTenantFrequency() {
   logger.info(`backfilled frequency on ${modifiedCount} tenant records`);
 }
 
+async function backfillEmailRealm() {
+  // The email send log predates its realmId field: backfill it from the
+  // tenant the email was sent about (recordId holds the tenant id).
+  const tenants = await Collections.Tenant.find({}, { realmId: 1 }).lean();
+  const tenantIdsByRealm = tenants.reduce((acc, tenant) => {
+    if (!tenant.realmId) {
+      return acc;
+    }
+    const realmId = String(tenant.realmId);
+    if (!acc[realmId]) {
+      acc[realmId] = [];
+    }
+    acc[realmId].push(String(tenant._id));
+    return acc;
+  }, {});
+
+  let modifiedCount = 0;
+  for (const [realmId, tenantIds] of Object.entries(tenantIdsByRealm)) {
+    const result = await Collections.Email.collection.updateMany(
+      { recordId: { $in: tenantIds }, realmId: { $exists: false } },
+      { $set: { realmId } }
+    );
+    modifiedCount += result.modifiedCount;
+  }
+  logger.info(`backfilled realmId on ${modifiedCount} email records`);
+}
+
 export default async function migratedb() {
   let failure = false;
   let db;
@@ -190,6 +217,7 @@ export default async function migratedb() {
     await updateThirdPartyConfiguration();
     await renameTenantContactName();
     await backfillTenantFrequency();
+    await backfillEmailRealm();
     logger.info('Migration done');
   } catch (error) {
     logger.error(String(error));

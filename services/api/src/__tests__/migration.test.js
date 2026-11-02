@@ -2,7 +2,9 @@
 import { jest } from '@jest/globals';
 
 let dbLeases;
+let dbTenants;
 let updateManyCalls;
+let emailUpdateCalls;
 
 const loggerMock = {
   debug: jest.fn(),
@@ -25,9 +27,22 @@ const Collections = {
         : Promise.resolve([])
   },
   Tenant: {
+    // called as find({}, projection).lean() by the email realmId backfill
+    find: (filter, projection) =>
+      projection
+        ? { lean: () => Promise.resolve(dbTenants) }
+        : Promise.resolve([]),
     collection: {
       updateMany: (filter, update) => {
         updateManyCalls.push({ filter, update });
+        return Promise.resolve({ modifiedCount: 1 });
+      }
+    }
+  },
+  Email: {
+    collection: {
+      updateMany: (filter, update) => {
+        emailUpdateCalls.push({ filter, update });
         return Promise.resolve({ modifiedCount: 1 });
       }
     }
@@ -50,7 +65,9 @@ const frequencyUpdates = () =>
 describe('migration - tenant rent term frequency backfill', () => {
   beforeEach(() => {
     dbLeases = [];
+    dbTenants = [];
     updateManyCalls = [];
+    emailUpdateCalls = [];
     jest.clearAllMocks();
   });
 
@@ -102,5 +119,55 @@ describe('migration - tenant rent term frequency backfill', () => {
     expect(frequencyUpdates()).toHaveLength(0);
     // ...but the migration did run to completion
     expect(updateManyCalls.length).toBeGreaterThan(0);
+  });
+});
+
+describe('migration - email log realmId backfill', () => {
+  beforeEach(() => {
+    dbLeases = [];
+    dbTenants = [];
+    updateManyCalls = [];
+    emailUpdateCalls = [];
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    expect(loggerMock.error).not.toHaveBeenCalled();
+  });
+
+  it('stamps each email with the realm of its tenant', async () => {
+    dbTenants = [
+      { _id: 'tenant-1', realmId: 'realm-a' },
+      { _id: 'tenant-2', realmId: 'realm-a' },
+      { _id: 'tenant-3', realmId: 'realm-b' }
+    ];
+
+    await migratedb();
+
+    expect(emailUpdateCalls).toHaveLength(2); // one per realm
+
+    const byRealm = emailUpdateCalls.reduce((acc, { filter, update }) => {
+      acc[update.$set.realmId] = filter.recordId.$in;
+      return acc;
+    }, {});
+
+    expect(byRealm['realm-a']).toEqual(['tenant-1', 'tenant-2']);
+    expect(byRealm['realm-b']).toEqual(['tenant-3']);
+  });
+
+  it('never overwrites a realmId an email already carries', async () => {
+    dbTenants = [{ _id: 'tenant-1', realmId: 'realm-a' }];
+
+    await migratedb();
+
+    expect(emailUpdateCalls[0].filter.realmId).toEqual({ $exists: false });
+  });
+
+  it('skips tenants with no realm', async () => {
+    dbTenants = [{ _id: 'tenant-orphan' }];
+
+    await migratedb();
+
+    expect(emailUpdateCalls).toHaveLength(0);
   });
 });
