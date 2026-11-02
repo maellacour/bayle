@@ -21,10 +21,9 @@ export async function getRentsData(params) {
   }
 
   const landlord = dbTenant.realmId;
+  // company name for companies, organization name otherwise
   landlord.name =
-    (landlord.isCompany
-      ? landlord.companyInfo?.name
-      : landlord.contacts?.[0]?.name) || '';
+    (landlord.isCompany ? landlord.companyInfo?.name : landlord.name) || '';
   landlord.hasCompanyInfo = !!landlord.companyInfo;
   landlord.hasBankInfo = !!landlord.bankInfo;
   landlord.hasAddress = !!landlord.addresses?.length;
